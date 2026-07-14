@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>문구 제품 둘러보기</title>
+<style>
+  @font-face {
+    font-family: 'DungGeunMo';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/DungGeunMo.woff') format('woff');
+    font-weight: normal; font-display: swap;
+  }
+  :root {
+    --bg: #fffbe6;          /* 화사한 파스텔 옐로우 */
+    --dot: #ffffff;         /* 땡땡이 무늬 (밝은 화이트) */
+    --panel: #ffffff;
+    --ink: #33406e;         /* 남색 픽셀 테두리 */
+    --line: #c9d8ef;
+    --text: #2f3a5f;
+    --sub: #8a97b8;
+    --accent: #33406e;
+    --pop: #4fb3f0;         /* 하늘색 포인트 */
+    --red: #ff5a4e;
+    --green: #2ea87c;
+    --blue: #3b82c4;
+    --paper1: #fff6c9; --paper2: #ffe3ef; --paper3: #dcf5e5; --paper4: #dbefff; --paper5: #eee4ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: var(--bg); color: var(--text);
+    background-image:
+      radial-gradient(var(--dot) 1.5px, transparent 2px),
+      radial-gradient(var(--dot) 1.2px, transparent 1.7px);
+    background-size: 18px 18px, 18px 18px;
+    background-position: 0 0, 9px 9px;
+    min-height: 100vh;
+  }
+  header {
+    padding: 13px 24px; background: var(--panel);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 50;
+  }
+  header h1 {
+    font-family: "DungGeunMo", "Pretendard", sans-serif; font-size: 23px; font-weight: 400;
+    letter-spacing: .5px; display: flex; align-items: center; gap: 8px;
+    color: var(--ink);
+  }
+  header h1::before { content: "🌰"; font-size: 19px; display: inline-block; transform: rotate(-8deg); }
+  header .hint {
+    font-size: 11.5px; color: var(--ink); background: #e3f3fe;
+    border-radius: 2px; padding: 3px 11px;
+    transform: rotate(-1.2deg); font-weight: 600;
+  }
+  .spacer { flex: 1; }
+  .btn {
+    border: none; background: #fdf1cf; color: var(--text);
+    padding: 8px 13px; border-radius: 2px; font-size: 13px; cursor: pointer;
+    transition: all .12s; font-family: inherit; font-weight: 600;
+  }
+  .btn:hover { transform: translateY(-1px); background: #ffe6a6; }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--pop); color: #fff; }
+  .btn.on { background: var(--pop); color: #fff; }
+  #searchBox {
+    border: 1.5px solid transparent; border-radius: 2px; padding: 8px 12px;
+    font-size: 13px; font-family: inherit; width: 220px; background: #fdf1cf;
+    transition: all .12s;
+  }
+  #searchBox:focus { outline: none; border-color: var(--pop); }
+
+  /* ── 예시 데이터 안내 배너 ── */
+  #demoBanner {
+    background: #fdf6e3; border-bottom: 1px solid #ecdfb8; padding: 9px 24px;
+    font-size: 12.5px; color: #7a6a33; display: flex; align-items: center; gap: 10px;
+  }
+  #demoBanner button { margin-left: auto; }
+
+  /* ── 쇼핑몰 바로가기 ── */
+  #linkSec { padding: 16px 24px 0; }
+  .linkPanel {
+    background: var(--panel); border-radius: 2px;
+    padding: 13px 16px;
+  }
+  .linkHead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .linkHead h2 { font-family: "DungGeunMo", "Pretendard", sans-serif; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+  .linkTabs { display: flex; gap: 5px; }
+  .linkTab {
+    border: none; background: #fdf1cf; color: var(--text);
+    border-radius: 2px; padding: 4px 11px; font-size: 12px; cursor: pointer; font-family: inherit; font-weight: 600;
+    transition: all .12s;
+  }
+  .linkTab:hover { background: #ffe6a6; transform: translateY(-1px); }
+  .linkTab.on { background: var(--pop); color: #fff; }
+  .linkTab .cnt { opacity: .6; font-size: 10.5px; margin-left: 2px; }
+  .linkAddForm { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+  .linkAddForm input {
+    border: 1.5px solid transparent; border-radius: 2px; padding: 7px 10px;
+    font-size: 12.5px; font-family: inherit; background: #fdf1cf;
+  }
+  .linkAddForm input:focus { outline: none; border-color: #b9b6af; }
+  #lnName { width: 130px; }
+  #lnUrl { width: 250px; }
+  .linkList { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
+  .linkItem {
+    display: flex; align-items: center; gap: 8px; border: none;
+    border-radius: 2px; padding: 5px 8px; font-size: 12.5px; background: transparent;
+    max-width: 100%;
+  }
+  .linkItem img.favicon { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; }
+  .linkItem a { color: var(--text); text-decoration: none; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+  .linkItem a:hover { text-decoration: underline; }
+  .linkItem .host { color: var(--sub); font-size: 11px; }
+  .linkItem .time { font-size: 10.5px; color: var(--sub); }
+  .linkItem button { border: none; background: none; cursor: pointer; font-size: 15px; padding: 1px 2px; color: var(--sub); font-family: inherit; }
+  .linkItem button.star.on { color: #e0245e; }
+  .linkItem button.star:hover { color: #e0245e; }
+  .linkItem button.del:hover { color: var(--red); }
+  .linkEmpty { font-size: 12px; color: var(--sub); margin-top: 10px; line-height: 1.6; }
+  /* 📋 링크 모음: 세로 리스트 형태 */
+  .linkList.listMode { flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+  .linkList.listMode .linkItem { width: 100%; }
+  .linkList.listMode .linkItem a { max-width: none; flex: 1; }
+
+  /* ── 필터 바 ── */
+  #filterBar {
+    padding: 14px 24px 4px; display: flex; flex-direction: column; gap: 9px;
+  }
+  .chipRow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .chipRow .rowLbl { font-size: 11.5px; font-weight: 700; color: var(--sub); width: 56px; flex-shrink: 0; letter-spacing: .5px; }
+  .chip {
+    border: none; background: #fdf1cf; color: var(--text);
+    padding: 5px 12px; border-radius: 2px; font-size: 12.5px; cursor: pointer;
+    transition: all .12s; font-family: inherit; font-weight: 600;
+  }
+  .chip:hover { background: #ffe6a6; transform: translateY(-1px) rotate(-.5deg); }
+  .chip.on { background: var(--pop); color: #fff; }
+  .chip .cnt { opacity: .55; font-size: 11px; margin-left: 3px; }
+  #sortRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 4px 24px 0; }
+  #sortRow select, #sortRow label {
+    font-size: 12.5px; font-family: inherit;
+  }
+  #sortRow select {
+    padding: 7px 10px; border: none; border-radius: 2px;
+    background: #fdf1cf; color: var(--text); cursor: pointer; font-weight: 600;
+  }
+  .toggleLbl { display: flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: var(--sub); }
+  .toggleLbl input { accent-color: var(--accent); cursor: pointer; }
+  #resultCnt { font-size: 12px; color: var(--sub); margin-left: auto; }
+
+  /* ── 제품 그리드 ── */
+  #grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px; padding: 16px 24px 40px;
+  }
+  .card {
+    background: var(--panel); border: none; border-radius: 2px;
+    overflow: hidden; cursor: pointer; transition: transform .15s;
+    position: relative; display: flex; flex-direction: column;
+  }
+  .card:hover { transform: translateY(-3px); }
+  .card .imgBox {
+    aspect-ratio: 1; background: #fffdf4; display: flex; align-items: center;
+    justify-content: center; position: relative; overflow: hidden;
+  }
+  .card .imgBox img { width: 100%; height: 100%; object-fit: cover; }
+  .card .imgBox .noImg { font-size: 30px; opacity: .25; }
+  .card .rankBadge {
+    position: absolute; top: 8px; left: -5px; background: var(--pop); color: #fff;
+    font-family: "DungGeunMo", "Pretendard", sans-serif;
+    font-size: 14px; font-weight: 400; padding: 3px 12px; border-radius: 2px;
+    transform: rotate(-5deg);
+  }
+  .card .rankBadge.gold { background: #ffc531; color: var(--ink); }
+  .badges { position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .badge {
+    font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 2px; color: #fff;
+    transform: rotate(2deg);
+  }
+  .badge.sale { background: var(--red); }
+  .badge.out { background: #999; }
+  .badge.best { background: #b8860b; }
+  .badge.new { background: var(--green); }
+  .card .body { padding: 11px 13px 13px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .mallTag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 2px;
+    width: fit-content;
+  }
+  .mallTag[data-mall] { cursor: pointer; }
+  .mallTag[data-mall]:hover { text-decoration: underline; }
+
+  /* ── 카테고리별 묶어보기: 레트로 티켓 라벨 느낌 ── */
+  .groupHead {
+    width: fit-content; font-family: "DungGeunMo", "Pretendard", sans-serif;
+    font-size: 19px; font-weight: 400; letter-spacing: .5px;
+    display: flex; align-items: center; gap: 8px; margin: 14px 0 12px;
+    padding: 4px 20px; background: #ffffff;
+    border-radius: 2px;
+    transform: rotate(-.8deg);
+  }
+  .groupHead .cnt { color: var(--text); opacity: .55; font-size: 13px; }
+  .groupGrid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px; margin-bottom: 26px;
+  }
+
+  /* ── 키워드 칩 ── */
+  .chip.kw { background: #fff8dd; }
+  .chip.kw.on { background: var(--accent); }
+  .chip .x { margin-left: 5px; opacity: .45; font-size: 11px; }
+  .chip .x:hover { opacity: 1; }
+  a.chip { text-decoration: none; display: inline-flex; align-items: center; }
+  .catTag { font-size: 10.5px; color: var(--sub); }
+  .card .name {
+    font-size: 13px; font-weight: 600; line-height: 1.45;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    min-height: 2.9em;
+  }
+  .priceRow { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+  .priceRow .now { font-family: "DungGeunMo", "Pretendard", sans-serif; font-size: 17px; font-weight: 400; color: var(--red); }
+  .priceRow .was { font-size: 11.5px; color: var(--sub); text-decoration: line-through; }
+  .priceRow .pct { font-size: 12px; font-weight: 700; color: var(--red); }
+  .metaRow { display: flex; align-items: center; gap: 9px; font-size: 11.5px; color: var(--sub); margin-top: auto; padding-top: 4px; }
+  .metaRow b { color: var(--text); font-weight: 600; }
+  .metaRow .star { color: #d4a017; }
+  .cardLink {
+    margin-left: auto; text-decoration: none; font-size: 13px; line-height: 1;
+    padding: 4px 7px; border: none; border-radius: 2px; background: #fdf1cf;
+    transition: all .12s;
+  }
+  .cardLink:hover { background: #ffe6a6; transform: scale(1.1); }
+
+  /* ── 테이블 뷰 ── */
+  #tableWrap { padding: 16px 24px 40px; display: none; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 2px; overflow: hidden; font-size: 12.5px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { background: #fff3cf; font-size: 11.5px; color: var(--text); font-weight: 700; cursor: pointer; user-select: none; }
+  th:hover { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: #faf9f7; }
+  td.name { white-space: normal; min-width: 200px; font-weight: 600; }
+  td .was { color: var(--sub); text-decoration: line-through; font-size: 11px; margin-left: 4px; }
+
+  /* ── 가격비교 뷰 ── */
+  #compareWrap { padding: 16px 24px 40px; display: none; }
+  .cmpCard {
+    background: var(--panel); border: none; border-radius: 2px;
+    padding: 14px 16px; margin-bottom: 14px;
+  }
+  .cmpCard h3 { font-family: "DungGeunMo", "Pretendard", sans-serif; font-size: 17px; margin-bottom: 9px; }
+  .cmpRow {
+    display: flex; align-items: center; gap: 10px; padding: 7px 10px;
+    border-radius: 8px; font-size: 12.5px;
+  }
+  .cmpRow.low { background: #eef7f0; }
+  .cmpRow .price { font-weight: 700; margin-left: auto; }
+  .cmpRow .lowTag { font-size: 10.5px; font-weight: 700; color: var(--green); }
+  .cmpNote { font-size: 12px; color: var(--sub); padding: 4px 24px 0; }
+
+  /* ── 빈 상태 ── */
+  #emptyMsg { text-align: center; color: var(--sub); padding: 70px 20px; font-size: 13.5px; line-height: 1.8; display: none; }
+  #emptyMsg .big { font-size: 40px; margin-bottom: 8px; }
+
+  /* ── 모달 ── */
+  .modalBg {
+    position: fixed; inset: 0; background: rgba(30,28,25,.45); z-index: 100;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modalBg.open { display: flex; }
+  .modal {
+    background: var(--panel); border: none; border-radius: 4px; padding: 22px;
+    width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 12px 32px rgba(40,50,80,.18);
+  }
+  .modal h2 { font-size: 15px; margin-bottom: 15px; }
+  .fRow { margin-bottom: 10px; }
+  .fRow label { display: block; font-size: 11.5px; color: var(--sub); font-weight: 700; margin-bottom: 4px; }
+  .fRow input, .fRow select, .fRow textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+    font-size: 13px; font-family: inherit; background: var(--panel); color: var(--text);
+  }
+  .fRow input:focus, .fRow textarea:focus { outline: none; border-color: #b9b6af; }
+  .fGrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .modalBtns { display: flex; gap: 8px; margin-top: 16px; }
+  .modalBtns .btn { flex: 1; }
+  .btn.danger { color: var(--red); }
+  textarea { min-height: 130px; resize: vertical; font-size: 12px !important; }
+  .note {
+    font-size: 11px; color: var(--sub); background: #f7f6f3; border-radius: 8px;
+    padding: 8px 10px; line-height: 1.6; margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>문구 제품 둘러보기</h1>
+  <span class="hint" id="mallHint">문구 브랜드 상품 모아보기</span>
+  <div class="spacer"></div>
+  <input id="searchBox" type="search" placeholder="🔍 제품명 검색">
+  <button class="btn" id="viewGridBtn">카드</button>
+  <button class="btn" id="viewTableBtn">목록</button>
+</header>
+
+<div id="demoBanner">
+  ⚠️ 지금 보이는 것은 <b>예시 데이터</b>입니다. 쇼핑몰 URL을 알려주시면 실제 판매 중인 제품으로 채워드려요.
+  <button class="btn" id="clearDemoBtn">예시 데이터 지우기</button>
+</div>
+
+<div id="linkSec">
+  <div class="linkPanel">
+    <div class="linkHead">
+      <h2>🔗 내 쇼핑몰 바로가기</h2>
+      <div class="linkTabs">
+        <button class="linkTab" data-tab="fav">💛 찜한 쇼핑몰<span class="cnt" id="favCnt"></span></button>
+        <button class="linkTab" data-tab="recent">🕒 최근 추가<span class="cnt" id="recentCnt"></span></button>
+        <button class="linkTab" data-tab="all">📋 링크 모음<span class="cnt" id="allCnt"></span></button>
+      </div>
+      <form class="linkAddForm" id="linkForm">
+        <input id="lnName" placeholder="이름 (예: 스마트스토어)">
+        <input id="lnUrl" placeholder="https:// 쇼핑몰 주소 붙여넣기">
+        <button class="btn primary" type="submit">+ 주소 추가</button>
+      </form>
+    </div>
+    <div class="linkList" id="linkList"></div>
+  </div>
+</div>
+
+<div id="filterBar">
+  <div class="chipRow" id="mallChips"><span class="rowLbl">쇼핑몰</span></div>
+  <div class="chipRow" id="catChips"><span class="rowLbl">카테고리</span></div>
+  <div class="chipRow" id="kwRow" style="display:none;"></div>
+</div>
+
+<div id="sortRow">
+  <select id="sortSel">
+    <option value="pop">🔥 인기순 (판매량)</option>
+    <option value="review">💬 리뷰 많은순</option>
+    <option value="rating">⭐ 평점 높은순</option>
+    <option value="priceAsc">💰 낮은 가격순</option>
+    <option value="priceDesc">💎 높은 가격순</option>
+    <option value="sale">🏷️ 할인율 높은순</option>
+    <option value="new">🆕 최신 등록순</option>
+    <option value="name">가나다순</option>
+  </select>
+  <label class="toggleLbl"><input type="checkbox" id="hideSoldout">품절 제외</label>
+  <label class="toggleLbl"><input type="checkbox" id="groupToggle">카테고리별 묶어보기</label>
+  <label class="toggleLbl"><input type="checkbox" id="compareToggle">가격비교 모드 (같은 제품 몰별 비교)</label>
+  <span id="resultCnt"></span>
+</div>
+
+<div id="grid"></div>
+<div id="tableWrap"></div>
+<div id="compareWrap"></div>
+<div id="emptyMsg">
+  <div class="big">📦</div>
+  표시할 제품이 없어요.<br>
+  검색어나 필터를 바꿔보세요.
+</div>
+
+<!-- 제품 추가/수정 모달 -->
+<div class="modalBg" id="editModal">
+  <div class="modal">
+    <h2 id="editTitle">제품 추가</h2>
+    <div class="fRow"><label>제품명 *</label><input id="fName" placeholder="예: 데일리 보습 크림 100ml"></div>
+    <div class="fGrid2">
+      <div class="fRow"><label>쇼핑몰 *</label><input id="fMall" list="mallList" placeholder="예: 스마트스토어"><datalist id="mallList"></datalist></div>
+      <div class="fRow"><label>카테고리 (비우면 자동 분류)</label><input id="fCat" list="catList" placeholder="예: 다이어리·일기장"><datalist id="catList"></datalist></div>
+    </div>
+    <div class="fGrid2">
+      <div class="fRow"><label>정가 (원)</label><input id="fPrice" type="number" placeholder="25000"></div>
+      <div class="fRow"><label>판매가 (원, 할인 시)</label><input id="fSale" type="number" placeholder="비우면 정가 판매"></div>
+    </div>
+    <div class="fGrid2">
+      <div class="fRow"><label>판매량 (인기순 기준)</label><input id="fSales" type="number" placeholder="0"></div>
+      <div class="fRow"><label>리뷰 수</label><input id="fReviews" type="number" placeholder="0"></div>
+    </div>
+    <div class="fGrid2">
+      <div class="fRow"><label>평점 (0~5)</label><input id="fRating" type="number" step="0.1" min="0" max="5" placeholder="4.8"></div>
+      <div class="fRow"><label>등록일</label><input id="fDate" type="date"></div>
+    </div>
+    <div class="fRow"><label>상품 페이지 URL</label><input id="fUrl" placeholder="https://..."></div>
+    <div class="fRow"><label>이미지 URL</label><input id="fImg" placeholder="https://... (비워도 됨)"></div>
+    <div class="fRow"><label class="toggleLbl" style="font-size:12.5px;color:var(--text);"><input type="checkbox" id="fSoldout">품절</label></div>
+    <div class="modalBtns">
+      <button class="btn danger" id="delBtn" style="display:none;">삭제</button>
+      <button class="btn" id="cancelBtn">취소</button>
+      <button class="btn primary" id="saveBtn">저장</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+"use strict";
+
+// ═══════════════ 데이터 ═══════════════
+const LS_KEY = "mallDashboard.v1";
+const MALL_COLORS = ["#2b5f8a", "#c0392b", "#2e7d4f", "#8a5fb0", "#b8860b", "#4a7a8a", "#a05a2c", "#5a6a8a"];
+
+// ═══ 실제 수집 데이터 (2026-07-07, 각 브랜드 자사몰에서 수집) ═══
+// SEED_VERSION을 올리고 SEED를 갱신하면, 기존 사용자에게는 새 제품만 NEW로 추가됩니다.
+const SEED_VERSION = 3;
+const P = (mall, cat, name, price, sale, reviews, url, img, soldout) => ({
+  name, mall, category: cat, price, sale: sale || null, sales: 0, reviews: reviews || 0,
+  rating: null, date: "", url: url || "", img: img || "", soldout: !!soldout,
+});
+const SEED = [
+// ── 리훈 (rihoon.co.kr) ──
+P("리훈","플래너·스케줄러","리훈 반가워 여름방학 초등학생 방학 플래너",11000,8800,2,"https://rihoon.co.kr/product/detail.html?product_no=723","https://rihoon.co.kr/web/product/medium/202606/dcbc0e49838730eca449cc45fd27c68d.jpg"),
+P("리훈","다이어리·일기장","[잉크파인] 2026년 날짜형 6개월 이야기 하반기 다이어리",18500,17570,16,"https://rihoon.co.kr/product/detail.html?product_no=318","https://rihoon.co.kr/web/product/medium/202606/cfcc9f449f65a9966c2c04174ae4bf68.jpg"),
+P("리훈","플래너·스케줄러","[잉크파인] 리뉴얼 1년 오늘공부 스터디플래너",14500,13770,14,"https://rihoon.co.kr/product/detail.html?product_no=147","https://rihoon.co.kr/web/product/medium/202606/42095fdabe674721d116e2816061f7a3.jpg"),
+P("리훈","다이어리·일기장","[잉크파인] 리뉴얼 오늘기억 5년 다이어리 일기장",26500,25170,0,"https://rihoon.co.kr/product/detail.html?product_no=1466","https://rihoon.co.kr/web/product/medium/202605/bb113a082638eec4203006adeb38bfdf.jpg"),
+P("리훈","독서·북커버","[잉크파인] 리뉴얼 어떤날의문장 독서기록장",19500,18520,0,"https://rihoon.co.kr/product/detail.html?product_no=1554","https://rihoon.co.kr/web/product/medium/202604/02275eed28fda06b016b7a99d293faa0.jpg"),
+P("리훈","플래너·스케줄러","리훈 초등 카테고리 오늘쓰임 가계부",12800,12160,0,"https://rihoon.co.kr/product/detail.html?product_no=1553","https://rihoon.co.kr/web/product/medium/202603/5a957462c5b1e063644cb7b71164bd3b.jpg"),
+P("리훈","플래너·스케줄러","리훈 리뉴얼 쉬운 오늘쓰임 먼슬리 초보 가계부",8000,7600,8,"https://rihoon.co.kr/product/detail.html?product_no=519","https://rihoon.co.kr/web/product/medium/202602/4f523b8770652ca3049241b17465065b.jpg"),
+P("리훈","노트·메모","[잉크파인] 하고싶은말 만년필 노트 A6",10000,9500,1,"https://rihoon.co.kr/product/detail.html?product_no=1547","https://rihoon.co.kr/web/product/medium/202602/1d1bb0fbb5b93477fb52bfde4cf771d5.jpg"),
+P("리훈","다이어리·일기장","리훈 26년 1학기 2학기 날짜형 대학생활 위클리 다이어리",16500,15670,1,"https://rihoon.co.kr/product/detail.html?product_no=1545","https://rihoon.co.kr/web/product/medium/202602/94e12019b27c688a1362d3180bd941c3.jpg"),
+P("리훈","노트·메모","[잉크파인] 이야기 라인 노트 A5 필사",15800,15010,1,"https://rihoon.co.kr/product/detail.html?product_no=1368","https://rihoon.co.kr/web/product/medium/202601/a5077330bec840a4fbdeda04a982bea8.jpg"),
+P("리훈","노트·메모","[잉크파인] 이야기 다이어리 미니 키링 만년필 노트",10000,9500,1,"https://rihoon.co.kr/product/detail.html?product_no=1541","https://rihoon.co.kr/web/product/medium/202601/a106448cfa640ec1e59810c5df1f90be.jpg"),
+P("리훈","독서·북커버","책쏙 초등 독서기록장 어린이 독서록",11000,10450,2,"https://rihoon.co.kr/product/detail.html?product_no=1536","https://rihoon.co.kr/web/product/medium/202601/cb59112724cbf48bac796eeda82ee89a.jpg"),
+P("리훈","다이어리·일기장","[잉크파인] 2026 하고싶은말 다이어리",19500,18520,2,"https://rihoon.co.kr/product/detail.html?product_no=1408","https://rihoon.co.kr/web/product/medium/202602/4ed6bbdeb086b3aefc52e4444a46671b.jpg"),
+P("리훈","플래너·스케줄러","오픈뷰 먼슬리 플래너 디깅달력 빅 월간 다이어리 A4",9800,9310,2,"https://rihoon.co.kr/product/detail.html?product_no=1382","https://rihoon.co.kr/web/product/medium/202505/b9687e673712a6633b455dfc8766e3cd.jpg"),
+P("리훈","플래너·스케줄러","오픈뷰 위클리 플래너 타임테이블 주간 다이어리 B5",9800,9310,10,"https://rihoon.co.kr/product/detail.html?product_no=1383","https://rihoon.co.kr/web/product/medium/202505/077bd6c698275a6d5b07d8b8a8988715.jpg"),
+P("리훈","플래너·스케줄러","두투두 위클리 플래너 체크리스트 습관관리 루틴 다이어리",18500,17570,16,"https://rihoon.co.kr/product/detail.html?product_no=1385","https://rihoon.co.kr/web/product/medium/202505/cc1baf3aa9c080e9d46f9bb0b4e3ceaf.jpg"),
+P("리훈","플래너·스케줄러","리훈 카테고리 오늘쓰임 가계부",15800,15010,1,"https://rihoon.co.kr/product/detail.html?product_no=1380","https://rihoon.co.kr/web/product/medium/202504/40516f115a7f70f8e3267eb7666f8ae5.jpg"),
+P("리훈","다이어리·일기장","리훈 2025년 이야기다이어리 펜 스티커 세트 톨 위클리",18500,17570,11,"https://rihoon.co.kr/product/detail.html?product_no=1198","https://rihoon.co.kr/web/product/medium/202410/7598b00f1a20ee58d534bcd054b20794.jpg"),
+P("리훈","다이어리·일기장","[1분발송] 리훈 덕아웃 야구 다이어리",10000,9500,0,"https://rihoon.co.kr/product/detail.html?product_no=1374","https://rihoon.co.kr/web/product/medium/202503/bdc2f0f5137edea6d64336af021692a9.jpg"),
+P("리훈","다이어리·일기장","리훈 리뉴얼 회사생활 업무일지 다이어리",18500,17570,11,"https://rihoon.co.kr/product/detail.html?product_no=1378","https://rihoon.co.kr/web/product/medium/202504/4b010dd2b83927f0ccb05453f8d03c84.jpg"),
+P("리훈","다이어리·일기장","[잉크파인] 2026 이야기다이어리 펜 스티커 세트",18500,17570,4,"https://rihoon.co.kr/product/detail.html?product_no=1475","https://rihoon.co.kr/web/product/medium/202511/b0fcb9150657b767632845c05e0c2e9c.jpg"),
+// ── 페이퍼리안 (paperian.co.kr) ──
+P("페이퍼리안","플래너·스케줄러","[만년형] 리마인드 위클리 스케줄러",5300,null,0,"https://paperian.co.kr/product/만년형-리마인드-위클리-스케줄러/676/","https://paperian.co.kr/web/product/medium/202501/29981cc676642ff274be014189163157.jpg"),
+P("페이퍼리안","노트·메모","[메이크-어-메모] 메모패드 24종",2400,null,33,"https://paperian.co.kr/product/메이크-어-메모-메모패드-24종/295/","https://paperian.co.kr/web/product/medium/202112/31540e7abdb7d7f1812ef4e9cbf89da2.jpg"),
+P("페이퍼리안","스티커","스테디, 스태리 스티커 (4종)",3800,null,8,"https://paperian.co.kr/product/스테디-스태리-스티커-4종/671/","https://paperian.co.kr/web/product/medium/202411/0778e462d0a9636baac7e73462d722dd.jpg"),
+P("페이퍼리안","스티커","라뜰리에 라벨 스티커",1800,null,5,"https://paperian.co.kr/product/라뜰리에-라벨-스티커/607/","https://paperian.co.kr/web/product/medium/202312/dd83641c2edce22c2bf4c69d5e846d26.jpg"),
+P("페이퍼리안","플래너·스케줄러","원먼스 골트랙커 (3종)",3200,2880,20,"https://paperian.co.kr/product/원먼스-골트랙커-3종/626/","https://paperian.co.kr/web/product/medium/202406/06e72f2f713a8cefce927efde5f5383a.jpg"),
+P("페이퍼리안","독서·북커버","[gift증정] Book Tracker",2000,null,23,"https://paperian.co.kr/product/gift증정-book-tracker/260/","https://paperian.co.kr/web/product/medium/202112/e4a4af21eff7dabdb96c8899fbbc70d2.jpg"),
+P("페이퍼리안","플래너·스케줄러","[만년형] 리스트 투 리브바이 - 쓰리로우 플래너",14800,null,57,"https://paperian.co.kr/product/만년형-리스트-투-리브바이-쓰리로우-플래너/582/","https://paperian.co.kr/web/product/medium/202312/bbdf7cd90285e0502282e3ffd597fb10.jpg"),
+P("페이퍼리안","카드·편지","편지지 세트 - from the sea",3200,null,2,"https://paperian.co.kr/product/편지지-세트-from-the-sea/406/","https://paperian.co.kr/web/product/medium/202112/26e02ad4863615124beac8686b11317b.jpg"),
+P("페이퍼리안","스티커","피그먼트 투명 스티커 (단품)",1500,null,21,"https://paperian.co.kr/product/피그먼트-투명-스티커-단품/474/","https://paperian.co.kr/web/product/medium/202204/656f3360cf8676862e88ef4a84fdd504.jpg"),
+P("페이퍼리안","노트·메모","[만년형] 에디트 테스크 노트 B7",10800,null,2,"https://paperian.co.kr/product/만년형-에디트-테스크-노트-b7/700/","https://paperian.co.kr/web/product/medium/202508/804e1ef1f0e36938ae3ad3487432ab89.jpg"),
+P("페이퍼리안","플래너·스케줄러","골트랙커 북 - 30일",3200,2880,10,"https://paperian.co.kr/product/골트랙커-북-30일/410/","https://paperian.co.kr/web/product/medium/202208/7ea557784a740509347f87f4eece14d1.jpg"),
+P("페이퍼리안","스티커","컬러팔레트 스티커 - 페이스",1700,null,12,"https://paperian.co.kr/product/컬러팔레트-스티커-페이스/344/","https://paperian.co.kr/web/product/medium/202112/4e4d1178f77c973fd5f5d5eab7436272.jpg"),
+P("페이퍼리안","스티커","컬러팔레트 스티커 - 스마일",1700,null,17,"https://paperian.co.kr/product/컬러팔레트-스티커-스마일/336/","https://paperian.co.kr/web/product/medium/202112/ca1d8eb4cc620bc6a2c467e977ca1899.jpg"),
+P("페이퍼리안","노트·메모","플랜마커 메이크-어-메모",2000,null,7,"https://paperian.co.kr/product/플랜마커-메이크-어-메모/280/","https://paperian.co.kr/web/product/medium/202112/14a49b3b51cfcc5247b8e8d702fb2e2c.jpg"),
+P("페이퍼리안","카드·편지","편지지 세트 - From the Farm",3200,null,5,"https://paperian.co.kr/product/편지지-세트-from-the-farm/554/","https://paperian.co.kr/web/product/medium/202304/b53b01642386b2cb3891b310f512c481.jpg"),
+P("페이퍼리안","노트·메모","애티튜드 데일리 노트북 B6",16000,null,9,"https://paperian.co.kr/product/애티튜드-데일리-노트북-b6/587/","https://paperian.co.kr/web/product/medium/202310/f0bee768c782b7e7122eccb0d9a82387.jpg"),
+P("페이퍼리안","바인더·앨범","아카이브 페이퍼 포켓",11800,null,14,"https://paperian.co.kr/product/아카이브-페이퍼-포켓/627/","https://paperian.co.kr/web/product/medium/202403/db7cb5aa7f99375851db46e81031f94a.jpg"),
+P("페이퍼리안","노트·메모","플랫 노트패드 A5 [M]",4500,null,3,"https://paperian.co.kr/product/플랫-노트패드-a5-m/562/","https://paperian.co.kr/web/product/medium/202308/d18b67b62c7446d4fdce04d805e995ac.jpg"),
+P("페이퍼리안","플래너·스케줄러","[gift증정] 원먼스 골트랙커 (데스크용)",8500,null,0,"https://paperian.co.kr/product/gift증정-원먼스-골트랙커-데스크용/675/","https://paperian.co.kr/web/product/medium/202412/93f74b0c0e9a8caeb691605b36ee4565.jpg"),
+P("페이퍼리안","플래너·스케줄러","원먼스 골트랙커 북",4000,3600,1,"https://paperian.co.kr/product/원먼스-골트랙커-북/741/","https://paperian.co.kr/web/product/medium/202601/39bfc5f9a2a50f7eeb3ab408f3d800a9.jpg"),
+P("페이퍼리안","노트·메모","에피소드 노트북 A6 - 라인",15000,null,0,"https://paperian.co.kr/product/에피소드-노트북-a6-라인/689/","https://paperian.co.kr/web/product/medium/202505/0013f26ebcea087da67f1636abf35db8.jpg"),
+P("페이퍼리안","노트·메모","아카이브 100 노트",11800,null,0,"https://paperian.co.kr/product/아카이브-100-노트/694/","https://paperian.co.kr/web/product/medium/202507/84e0440b743d428dbaefab511b20c27f.jpg"),
+P("페이퍼리안","마스킹테이프","아카이브 롤 테이프 (04-06)",8500,null,1,"https://paperian.co.kr/product/아카이브-롤-테이프-04-06/734/","https://paperian.co.kr/web/product/medium/202510/5bb61aa3d8210e12897b589486acd35c.jpg"),
+P("페이퍼리안","마스킹테이프","아카이브 롤 테이프 (01-03)",8500,null,1,"https://paperian.co.kr/product/아카이브-롤-테이프-01-03/733/","https://paperian.co.kr/web/product/medium/202510/7ce2dd8e923675b95558895d3221253c.jpg"),
+P("페이퍼리안","노트·메모","라이프가드너 메모패드 (8종)",2600,null,0,"https://paperian.co.kr/product/라이프가드너-메모패드-8종/693/","https://paperian.co.kr/web/product/medium/202507/0244a273c4a4284f874a2a95f6a56c6e.jpg"),
+P("페이퍼리안","노트·메모","라이프가드너 팔레트 노트 (8종)",10800,null,0,"https://paperian.co.kr/product/라이프가드너-팔레트-노트-8종/692/","https://paperian.co.kr/web/product/medium/202507/21a08195393e4223c504666079ba9277.jpg"),
+P("페이퍼리안","노트·메모","더 시너리 트래블 패스 노트",4800,null,3,"https://paperian.co.kr/product/더-시너리-트래블-패스-노트/695/","https://paperian.co.kr/web/product/medium/202508/8b6687cd7e95cc95b212b39e9b3fc790.jpg"),
+P("페이퍼리안","독서·북커버","나우,히어 북마크 노트 (8종)",3800,3420,1,"https://paperian.co.kr/product/나우히어-북마크-노트-8종/670/","https://paperian.co.kr/web/product/medium/202411/194254318ca061498eb2e6baad156992.jpg"),
+P("페이퍼리안","독서·북커버","리딩저널 슬림 - 북러버스 아카이브",6800,null,4,"https://paperian.co.kr/product/리딩저널-슬림-북러버스-아카이브/634/","https://paperian.co.kr/web/product/medium/202407/8f3e03ab7fd4d446c1d56063b246b7ea.jpg"),
+P("페이퍼리안","독서·북커버","리딩저널 - 북러버스 아카이브",16000,null,3,"https://paperian.co.kr/product/리딩저널-북러버스-아카이브/633/","https://paperian.co.kr/web/product/medium/202407/ee5876e6db70d82368b8e35fce925017.jpg"),
+P("페이퍼리안","노트·메모","라뜰리에 메모패드",4600,4140,0,"https://paperian.co.kr/product/라뜰리에-메모패드/772/","https://paperian.co.kr/web/product/medium/202607/20eec17e5ce8f49aae1981d27a2bb6b3.jpg"),
+P("페이퍼리안","카드·편지","인 유어 리듬 용돈 봉투 세트",3800,null,0,"https://paperian.co.kr/product/인-유어-리듬-용돈-봉투-세트/771/","https://paperian.co.kr/web/product/medium/202605/d2e8cf0f455b7a0c8cec3ba4ca43b69e.jpg"),
+P("페이퍼리안","마스킹테이프","더 시너리 이지컷 마스킹 테이프",6000,null,0,"https://paperian.co.kr/product/더-시너리-이지컷-마스킹-테이프/759/","https://paperian.co.kr/web/product/medium/202604/594d28e3075451046d6813765a8c6426.jpg"),
+P("페이퍼리안","노트·메모","폴드 포켓노트",3800,null,0,"https://paperian.co.kr/product/폴드-포켓노트/758/","https://paperian.co.kr/web/product/medium/202604/3e749911b21ff15aa246502340fe42e6.jpg"),
+P("페이퍼리안","플래너·스케줄러","골트랙커 스티키 북",4800,4320,0,"https://paperian.co.kr/product/골트랙커-스티키-북/757/","https://paperian.co.kr/web/product/medium/202604/f6029fbc5d2e6a4c87cdf4228324018f.jpg"),
+P("페이퍼리안","노트·메모","메이크 어 메모 리프 노트 - 바인딩 커버",3800,null,0,"https://paperian.co.kr/product/메이크-어-메모-리프-노트-바인딩-커버/756/","https://paperian.co.kr/web/product/medium/202604/792bd672350a28c0ad5d01d25ad72966.jpg"),
+P("페이퍼리안","노트·메모","메이크 어 메모 리프 노트 - Grid / Plain",5500,null,0,"https://paperian.co.kr/product/메이크-어-메모-리프-노트-grid-plain/754/","https://paperian.co.kr/web/product/medium/202603/9623390d4ff27b9289e6fa9a6aa60a49.jpg"),
+P("페이퍼리안","노트·메모","메이크 어 메모 리프 노트 - Day",5500,null,0,"https://paperian.co.kr/product/메이크-어-메모-리프-노트-day/753/","https://paperian.co.kr/web/product/medium/202603/428d23eb112848f4e277f5a128b6fac0.jpg"),
+P("페이퍼리안","노트·메모","메이크 어 메모 리프 노트 - Week",5500,null,0,"https://paperian.co.kr/product/메이크-어-메모-리프-노트-week/752/","https://paperian.co.kr/web/product/medium/202603/3f87a6d3a6b7edfd475b5b46228b8939.jpg"),
+P("페이퍼리안","노트·메모","메이크 어 메모 리프 노트 - Month",5500,null,0,"https://paperian.co.kr/product/메이크-어-메모-리프-노트-month/751/","https://paperian.co.kr/web/product/medium/202603/cc23822d72ba42bc9b229ce503ff6dc6.jpg"),
+P("페이퍼리안","카드·편지","라이프가드너 카드",4200,null,0,"https://paperian.co.kr/product/라이프가드너-카드/749/","https://paperian.co.kr/web/product/medium/202603/a1d3e62387e3d2236bba316d8698fd27.jpg"),
+// ── 인디고스토리 (indigostory.co.kr) ──
+P("인디고스토리","다이어리·일기장","[1+1] 2027 오피셜 슬림 먼슬리 다이어리 날짜형",11800,null,0,"https://indigostory.co.kr/product/detail.html?product_no=1858","https://indigostory.co.kr/web/product/medium/202607/c82989803ee2a18c483bbbd5c2b0582e.jpg"),
+P("인디고스토리","다이어리·일기장","2027 프리즘 B6 위클리 다이어리 날짜형 32절",14800,12140,0,"https://indigostory.co.kr/product/detail.html?product_no=1848","https://indigostory.co.kr/web/product/medium/202607/2eec0f133f4705ff98280af34539a502.jpg"),
+P("인디고스토리","다이어리·일기장","[카드포켓증정] 2027 프리즘 B6 먼슬리 다이어리",14800,12140,0,"https://indigostory.co.kr/product/detail.html?product_no=1847","https://indigostory.co.kr/web/product/medium/202607/8f837a74fb23413b1d665c97f0c222f4.jpg"),
+P("인디고스토리","다이어리·일기장","2027 프리즘 슬림 먼슬리 다이어리 날짜형",12800,10880,0,"https://indigostory.co.kr/product/detail.html?product_no=1845","https://indigostory.co.kr/web/product/medium/202606/62a210a01e6cfc0cc59c6ebe162b7db2.jpg"),
+P("인디고스토리","다이어리·일기장","[스티커증정] 마음사진 6개월 먼슬리 만년 다이어리",8800,7040,0,"https://indigostory.co.kr/product/detail.html?product_no=1773","https://indigostory.co.kr/web/product/medium/202606/aacc08e42bbbcdb314bcf27ee29397fe.jpg"),
+P("인디고스토리","다이어리·일기장","마음챙김 다정한 질문북 (40가지 Q&A 감정일기)",13800,11040,0,"https://indigostory.co.kr/product/detail.html?product_no=1762","https://indigostory.co.kr/web/product/medium/202512/7eb8ba88504183c7f7ed88584411562e.jpg"),
+P("인디고스토리","다이어리·일기장","자문자답 자존감 다이어리 50가지 질문 Q&A",13800,11040,0,"https://indigostory.co.kr/product/detail.html?product_no=1559","https://indigostory.co.kr/web/product/medium/202501/11436f172aeeb15f6de1aa69d02e41f2.jpg"),
+P("인디고스토리","다이어리·일기장","행복 질문 일기 365 Q&A 자문자답 만년형",13800,9940,0,"https://indigostory.co.kr/product/detail.html?product_no=1067","https://indigostory.co.kr/web/product/medium/202312/d944e7dc990a90364b54f8f87e0dcae6.jpg"),
+P("인디고스토리","다이어리·일기장","자문자답 다이어리 V.2 (Q&A, 일기장, 문답책)",16500,13200,0,"https://indigostory.co.kr/product/detail.html?product_no=825","https://indigostory.co.kr/web/product/medium/202206/6ab0339248922d0e3f19fb0c1f1d8663.jpg"),
+P("인디고스토리","다이어리·일기장","자문자답 다이어리 - 50가지 질문",12500,10000,0,"https://indigostory.co.kr/product/detail.html?product_no=591","https://indigostory.co.kr/web/product/medium/202012/b71dd7a6836311aa5282e94667cfde95.jpg"),
+P("인디고스토리","다이어리·일기장","[스티커증정] 아카이브 미 3년 일기장 (만년형)",19800,14850,0,"https://indigostory.co.kr/product/detail.html?product_no=1789","https://indigostory.co.kr/web/product/medium/202602/59f43392a6572b541f2fe573458a4d96.jpg"),
+P("인디고스토리","다이어리·일기장","[스티커증정] 자문자답 나를 찾는 3년 질문일기",19800,14850,0,"https://indigostory.co.kr/product/detail.html?product_no=1787","https://indigostory.co.kr/web/product/medium/202602/5384063bb536ef31e2781807d909ce31.jpg"),
+P("인디고스토리","다이어리·일기장","[축하엽서증정] 처음부모 임신 다이어리 태교 산모수첩",25800,19610,0,"https://indigostory.co.kr/product/detail.html?product_no=1571","https://indigostory.co.kr/web/product/medium/202502/a5e2b04b7b9f831934038f2941c0e821.jpg"),
+// ── 워너디스 (wannathis.cafe24.com) ──
+P("워너디스","스티커","동글동글 회사에서 살아남기 스티커 팩",10000,9500,18,"https://wannathis.cafe24.com/product/동글동글-회사에서-살아남기-스티커-팩/1131/","https://wannathis.cafe24.com/web/product/big/202606/f3ab1def0b446c8e497b7e59768c3e01.jpg"),
+P("워너디스","바인더·앨범","워너디스 A5 6공 스티커 바인더 리필 속지 (5종)",2500,2250,277,"https://wannathis.cafe24.com/product/워너디스-a5-6공-스티커-바인더-리필-속지/409/","https://wannathis.cafe24.com/web/product/big/202403/f1524b6e9e01ed342a4934b7e5ae5747.jpg"),
+P("워너디스","마스킹테이프","삐뚤빼뚤 낙서 키스컷 마테",6500,5980,526,"https://wannathis.cafe24.com/product/삐뚤빼뚤-낙서-키스컷-마테/950/","https://wannathis.cafe24.com/web/product/big/202503/8a3d5ef740b45f481bdebf9281a493ce.jpg"),
+P("워너디스","바인더·앨범","워너디스 A5 와이드 6공 포켓 양면 리필 속지",3500,3150,348,"https://wannathis.cafe24.com/product/워너디스-a5-와이드-6공-포켓-양면-리필-속지/861/","https://wannathis.cafe24.com/web/product/big/202407/33c71dbae91bf1f425bd4ff2ef10d763.jpg"),
+P("워너디스","다이어리·일기장","잔물결 5년 일기장 다이어리",24800,23560,789,"https://wannathis.cafe24.com/product/잔물결-5년-일기장-다이어리/1032/","https://wannathis.cafe24.com/web/product/big/202509/614706478ac4a1601cb2cc7717fa485d.jpg"),
+P("워너디스","마스킹테이프","내가 그린 데일리 데코 키스컷",6900,5980,810,"https://wannathis.cafe24.com/product/내가-그린-데일리-데코-키스컷/925/","https://wannathis.cafe24.com/web/product/big/202412/6c3744fc456c9a1f4a282c796157d7e3.jpg"),
+P("워너디스","스티커","피스오브 포토 프레임 스티커 팩",8800,8360,12,"https://wannathis.cafe24.com/product/피스오브-포토-프레임-스티커-팩/1126/","https://wannathis.cafe24.com/web/product/big/202606/98cb11be5d559c47195c0729f8d3163c.jpg"),
+P("워너디스","스티커","피스오브 포토 타이포 스티커 팩",5800,5510,14,"https://wannathis.cafe24.com/product/피스오브-포토-타이포-스티커-팩/1125/","https://wannathis.cafe24.com/web/product/big/202606/a11034b79b0ae1056611d53983714e36.jpg"),
+P("워너디스","마스킹테이프","허기룸 마테 스티커 세트 303호",6800,6460,15,"https://wannathis.cafe24.com/product/허기룸-마테-스티커-세트-303호/1117/","https://wannathis.cafe24.com/web/product/big/202605/c4be03e005287429f624aa620705e9dc.jpg"),
+P("워너디스","마스킹테이프","쪼꼬미 사각 키스컷 마테 - 데코",6500,5980,21,"https://wannathis.cafe24.com/product/쪼꼬미-사각-키스컷-마테-데코/1128/","https://wannathis.cafe24.com/web/product/big/202605/043cfeb653a93c5a8adb87a331799a89.jpg"),
+P("워너디스","마스킹테이프","쪼꼬미 사각 키스컷 마테 - 라벨",6500,5980,17,"https://wannathis.cafe24.com/product/쪼꼬미-사각-키스컷-마테-라벨/1127/","https://wannathis.cafe24.com/web/product/big/202605/a5d73d7c0e4fa4f0256b43bdb3856a26.jpg"),
+P("워너디스","마스킹테이프","쪼꼬미 사각 키스컷 마테 - 패턴",6500,5980,18,"https://wannathis.cafe24.com/product/쪼꼬미-사각-키스컷-마테-패턴/1123/","https://wannathis.cafe24.com/web/product/big/202605/d1dcb95b6f10c4723967b42a23a933d4.jpg"),
+P("워너디스","마스킹테이프","디스앤뎃 이지컷 기록 마스킹 테이프 ver.2",8000,7600,35,"https://wannathis.cafe24.com/product/디스앤뎃-이지컷-기록-마스킹-테이프-ver2/1103/","https://wannathis.cafe24.com/web/product/big/202604/bd40627bab68e583ce6d21221e83f2c7.jpg"),
+// ── 라이브워크 (livework.net) ──
+P("라이브워크","노트·메모","모모씨 마시멜로 메모 링",3500,null,0,"https://livework.net/product/모모씨-마시멜로-메모-링/2682/","https://livework.net/web/product/medium/202606/e644d063577d4e906f358180f3259522.jpg"),
+P("라이브워크","리빙·굿즈","모모씨 마시멜로 메모 북 키링",15500,12400,0,"https://livework.net/product/모모씨-마시멜로-메모-북-키링/2683/","https://livework.net/web/product/medium/202606/82d727512590737f54b053b224058295.jpg"),
+P("라이브워크","파우치·가방","라이프앤피시스 컴팩트 미니 펜 파우치",15800,12640,0,"https://livework.net/product/라이프앤피시스-컴팩트-미니-펜-파우치/2670/","https://livework.net/web/product/medium/202606/e4ed8bc40d3fb7a1a357ada9eb1cd921.jpg"),
+P("라이브워크","파우치·가방","라이프앤피시스 컴팩트 삼각 펜 파우치",22000,17600,0,"https://livework.net/product/라이프앤피시스-컴팩트-삼각-펜-파우치/2671/","https://livework.net/web/product/medium/202606/8fdd03c624dd98d1c8303f283bff5696.jpg"),
+P("라이브워크","파우치·가방","라이프앤피시스 컴팩트 플랫 펜 파우치",19800,15840,0,"https://livework.net/product/라이프앤피시스-컴팩트-플랫-펜-파우치/2672/","https://livework.net/web/product/medium/202602/02b1dd9049c91067c941f9f2037ada8c.jpg"),
+P("라이브워크","마스킹테이프","라이프앤피시스 페이퍼 테이프 15mm",4200,3360,0,"https://livework.net/product/라이프앤피시스-페이퍼-테이프-15mm/2673/","https://livework.net/web/product/medium/202606/4903ec25ff516295597a03fa085812cf.jpg"),
+P("라이브워크","스티커","라이프앤피시스 스티커컬렉션 이하여백 에디션 (COLOR/DRAW)",9500,null,0,"https://livework.net/product/라이프앤피시스-스티커컬렉션-이하여백-에디션-colordraw/2674/","https://livework.net/web/product/medium/202606/a294ef3fc6d7fb1294bd39c4b84c1323.jpg"),
+P("라이브워크","스티커","라이프앤피시스 스티커컬렉션 이하여백 에디션 (LIFE v.2)",8500,null,0,"https://livework.net/product/라이프앤피시스-스티커컬렉션-이하여백-에디션-life-v2/2675/","https://livework.net/web/product/medium/202606/0f7208253603f32f2c24121d061aa079.jpg"),
+P("라이브워크","노트·메모","피요 트래이싱 스티키 메모",5400,null,0,"https://livework.net/product/피요-트래이싱-스티키-메모/2645/","https://livework.net/web/product/medium/202601/3357facf2bf95f17a53307f0a7336e6b.jpg"),
+P("라이브워크","노트·메모","코이 트래이싱 스티키 메모",6500,null,0,"https://livework.net/product/코이-트래이싱-스티키-메모/2646/","https://livework.net/web/product/medium/202601/1f618814ad54f9145585ecf77fae5c46.jpg"),
+// ── 헤이머지 (heymerge.com) ──
+P("헤이머지","리빙·굿즈","Tiny Bubble Mug",4500,null,0,"https://heymerge.com/product/tiny-bubble-mug/221/","https://heymerge.com/web/product/big/202602/9ee77f15c5cbfb6a2d08dc265e162840.jpg"),
+P("헤이머지","파우치·가방","Foldy Wallet - Silent Dot",72000,null,0,"https://heymerge.com/product/foldy-wallet-silent-dot/214/","https://heymerge.com/web/product/big/202601/59d95bd410957e3f36a2b47ad8c12a34.png"),
+P("헤이머지","파우치·가방","Foldy Wallet - Mute Black",72000,null,0,"https://heymerge.com/product/foldy-wallet-mute-black/217/","https://heymerge.com/web/product/big/202601/c61c075da279abb7c2d7cfa33b05d25f.png"),
+P("헤이머지","파우치·가방","Out Layer Bag - Salt Melange",104000,null,0,"https://heymerge.com/product/out-layer-bag-salt-melange/224/","https://heymerge.com/web/product/big/202605/c7b6a20d0520025d112ff2d048bb8439.jpg"),
+P("헤이머지","파우치·가방","Out Layer Bag - Pistachio Navy",104000,null,0,"https://heymerge.com/product/out-layer-bag-pistachio-navy/228/","https://heymerge.com/web/product/big/202605/6d5b79c6e4b4ee74716ceca8dffc1d88.jpg"),
+P("헤이머지","파우치·가방","Out Layer Bag - Double Berry",104000,null,0,"https://heymerge.com/product/out-layer-bag-double-berry/227/","https://heymerge.com/web/product/big/202605/514b3e6f277f8fa4b793f11da6c2bb55.jpg"),
+P("헤이머지","파우치·가방","Documents - White",112000,null,0,"https://heymerge.com/product/documents-white/64/","https://heymerge.com/web/product/big/shop1_4eef159ba0645147c4b7fa0cd125c77c.png"),
+P("헤이머지","독서·북커버","Snug Book Cover - Silent Dot",65000,null,0,"https://heymerge.com/product/snug-book-cover-silent-dot/201/","https://heymerge.com/web/product/big/202505/fc24ea7553bad072cc53c0777bab84d3.jpg"),
+P("헤이머지","독서·북커버","Snug Book Cover - Black",65000,null,0,"https://heymerge.com/product/snug-book-cover-black/186/","https://heymerge.com/web/product/medium/202502/2360f5d58cfdabdd1b12f2da72581a3e.jpg"),
+P("헤이머지","독서·북커버","Snug Book Cover - White",65000,null,0,"https://heymerge.com/product/snug-book-cover-white/185/","https://heymerge.com/web/product/big/202502/bd04f9f664677fa6e227bf4f35500841.jpg"),
+P("헤이머지","독서·북커버","Snug Book Cover - Silver",65000,null,0,"https://heymerge.com/product/snug-book-cover-silver/200/","https://heymerge.com/web/product/big/202505/132b11f9f62d1cabd3777b2a38e4c0a1.jpg"),
+P("헤이머지","독서·북커버","Snug Book Cover - Vanilla",65000,null,0,"https://heymerge.com/product/snug-book-cover-vanilla/223/","https://heymerge.com/web/product/big/202605/1af72afac05da55781ecad7688d820b3.png"),
+P("헤이머지","독서·북커버","Snug Book Cover - Blue gray",65000,null,0,"https://heymerge.com/product/snug-book-cover-blue-gray/202/","https://heymerge.com/web/product/big/202507/06e0731cdc0572daaa8a9faaac6e366d.png"),
+P("헤이머지","리빙·굿즈","Bubble Mug 01 Shadow",39000,null,0,"https://heymerge.com/product/bubble-mug-01-shadow/21/","https://heymerge.com/web/product/big/202411/e615e97a3a67c43ab55a34291fbb6a09.png"),
+P("헤이머지","리빙·굿즈","Bubble Mug 05 Dragon Fruit",39000,null,0,"https://heymerge.com/product/bubble-mug-05-dragon-fruit/164/","https://heymerge.com/web/product/big/shop1_5f97e3f170be5dd9e02e48e3bb8e32f8.png"),
+P("헤이머지","리빙·굿즈","Bubble Mug 06 Lemon",39000,null,0,"https://heymerge.com/product/bubble-mug-06-lemon/163/","https://heymerge.com/web/product/big/shop1_c2a9c568479c3858b2d3e9690486c5a1.png"),
+P("헤이머지","리빙·굿즈","Bubble Mug 30 Pajamas-Night",39000,null,0,"https://heymerge.com/product/bubble-mug-30-pajamas-night/100/","https://heymerge.com/web/product/big/202411/b7cf63cb74a950fc07d2f26393364525.png"),
+P("헤이머지","리빙·굿즈","Bubble Mug 50 Clover",39000,null,0,"https://heymerge.com/product/bubble-mug-50-clover/189/","https://heymerge.com/web/product/big/202502/7835dafcf110a95aa3d97b87cf14fb30.png"),
+P("헤이머지","리빙·굿즈","Bubble Mug 53 Dotty",42000,null,0,"https://heymerge.com/product/bubble-mug-53-dotty/193/","https://heymerge.com/web/product/big/202503/4f293ae1f52b61edc24ebd8600280910.png"),
+P("헤이머지","리빙·굿즈","Bubble Mug 57 Petal",40000,null,0,"https://heymerge.com/product/bubble-mug-57-petal/198/","https://heymerge.com/web/product/big/202505/7d1fcb78288593edb233f4486558ce9d.png"),
+P("헤이머지","리빙·굿즈","Moment Keyring - Silent Dot",31000,null,0,"https://heymerge.com/product/moment-keyring-silent-dot/195/","https://heymerge.com/web/product/big/202602/781788304022e904c65af382a09210c8.png"),
+P("헤이머지","리빙·굿즈","Moment Keyring - White",31000,null,0,"https://heymerge.com/product/moment-keyring-white/44/","https://heymerge.com/web/product/big/202503/a973cbbc1a0a216320c1f0e1d2ff83da.png"),
+P("헤이머지","리빙·굿즈","Car Keyring / Cushion Tok",18000,null,0,"https://heymerge.com/product/car-keyring-cushion-tok/85/","https://heymerge.com/web/product/big/shop1_18117b1dd6ef46fab4cd47cc309c7d97.jpg"),
+P("헤이머지","스티커","Epoxy Sticker (1ea)",3500,null,0,"https://heymerge.com/product/epoxy-sticker-1ea/83/","https://heymerge.com/web/product/big/shop1_21e20317618352e5cbceb44b5954362a.jpg"),
+P("헤이머지","리빙·굿즈","Punching basket 1x1 - Red+Pink",49000,null,0,"https://heymerge.com/product/punching-basket-1x1-redpink/39/","https://heymerge.com/web/product/big/shop1_530081b728709ac5577949a6ab5e757b.png"),
+// ── 오롤리데이 (oh-lolly-day.com) ──
+P("오롤리데이","노트·메모","Happier label DIY note_A6_cover",16000,13600,0,"https://oh-lolly-day.com/product/happier-label-diy-notea6cover/1000/","https://oh-lolly-day.com/web/product/big/202606/3ed1072a6df8f69d84b2630c6b733b9c.jpg",1),
+P("오롤리데이","노트·메모","Happier label DIY note_A6_strap",1300,1100,0,"https://oh-lolly-day.com/product/happier-label-diy-notea6strap/1001/","https://oh-lolly-day.com/web/product/big/202606/06438351dddff31120a294904f0f6450.jpg",1),
+P("오롤리데이","노트·메모","Happier label DIY note_A6_note",11000,9350,0,"https://oh-lolly-day.com/product/happier-label-diy-notea6note/1002/","https://oh-lolly-day.com/web/product/big/202606/a27b31892c0194bea3b69e29355a8e6e.jpg",1),
+P("오롤리데이","노트·메모","[세트] Happier label DIY note_A6",26000,22100,0,"https://oh-lolly-day.com/product/세트-happier-label-diy-notea6/1003/","https://oh-lolly-day.com/web/product/big/202606/cbd6b5b1f23a49f67d15aaff1678e8c2.jpg",1),
+P("오롤리데이","노트·메모","Happier label DIY note_key ring",18000,15300,0,"https://oh-lolly-day.com/product/happier-label-diy-notekey-ring/1007/","https://oh-lolly-day.com/web/product/big/202606/d25db05d38d3c6290dcd31e3334b2f35.jpg",1),
+P("오롤리데이","파우치·가방","Happier label TPL tablet PC&book pouch",29500,25070,0,"https://oh-lolly-day.com/product/happier-label-tpl-tablet-pcbook-pouch/1008/","https://oh-lolly-day.com/web/product/big/202606/427051406f0115748db01f83c28da7e9.jpg",1),
+P("오롤리데이","파우치·가방","Happier label TPL string pen case",14500,12320,0,"https://oh-lolly-day.com/product/happier-label-tpl-string-pen-case/1009/","https://oh-lolly-day.com/web/product/big/202606/1498c6d81eedee6aff1bb27b429cb0aa.jpg",1),
+P("오롤리데이","독서·북커버","Lost & Found bookmark",9000,7650,0,"https://oh-lolly-day.com/product/lost-found-bookmark/1010/","https://oh-lolly-day.com/web/product/big/202606/4712f99d4028b53ee725b717ab794310.jpg",1),
+P("오롤리데이","리빙·굿즈","Moments library",32000,16000,0,"https://oh-lolly-day.com/product/moments-library/1011/","https://oh-lolly-day.com/web/product/big/202606/98a0d4831f94c3127c6e12cffb0cdc69.jpg",1),
+P("오롤리데이","파우치·가방","Happier label layer pouch",21500,18270,0,"https://oh-lolly-day.com/product/happier-label-layer-pouch/883/","https://oh-lolly-day.com/web/product/big/202606/e31b7480bcb16d43e1f27b3e39b0d797.jpg",1),
+P("오롤리데이","파우치·가방","Happier label clear brick pouch",22000,20900,0,"https://oh-lolly-day.com/product/happier-label-clear-brick-pouch/892/","https://oh-lolly-day.com/web/product/big/202507/bbb48d8d83f57c48b54e557a3d276647.jpg",1),
+P("오롤리데이","파우치·가방","Happier label clear big bag",42000,39900,0,"https://oh-lolly-day.com/product/happier-label-clear-big-bag/893/","https://oh-lolly-day.com/web/product/big/202507/011fe7d13edf6030f335d61bb41d178d.jpg",1),
+// ── 포인트오브뷰 (pointofview.kr) ──
+P("포인트오브뷰","노트·메모","트래블러스 노트 20주년 커스터마이징 세트",95000,null,0,"https://pointofview.kr/product/트래블러스-노트-20주년-커스텀마이징-세트-travelers-notebook-20th-anniversary-customizat/9281/","https://pointofview.kr/web/product/big/202606/eeefbea5b337d1826260769068d516e6.png",1),
+P("포인트오브뷰","필기구","MD 드로잉 펜 MD Drawing Pen",5500,null,0,"https://pointofview.kr/product/md-드로잉-펜-md-drawing-pen/9280/","https://pointofview.kr/web/product/big/202605/5578a657330aaa7a4a258e2b2aace5fb.png",1),
+P("포인트오브뷰","노트·메모","그로브 소프트 노트 POV x KBP",15000,null,0,"https://pointofview.kr/product/그로브-소프트-노트-pov-x-kbp-grove-soft-note/9278/","https://pointofview.kr/web/product/big/202606/cec1a0482d1d4233a699c7b7bc5894eb.png",1),
+P("포인트오브뷰","필기구","연필깎이 POV x 티티경인 Hi Silver Pencil Sharpener",28000,null,0,"https://pointofview.kr/product/연필깎이-pov-x-티티경인-hi-silver-pencil-sharpener/9277/","https://pointofview.kr/web/product/big/202606/669e1f27e200259d13ce43793f028d14.png",1),
+P("포인트오브뷰","리빙·굿즈","메탈 키링 POV x Hello Kitty",12000,null,0,"https://pointofview.kr/product/메탈-키링-pov-x-hello-kitty-metal-keyring/9263/","https://pointofview.kr/web/product/big/202605/07ccff7ca884f0c434e6020a86dea64d.png",1),
+P("포인트오브뷰","카드·편지","와시 명함크기 카드 - Blue Ear-Edged",5000,null,0,"https://pointofview.kr/product/와시-명함크기-카드-washi-business-card-blue-ear-edged/9130/","https://pointofview.kr/web/product/big/202603/d25b1ddbb36ec3f874aeb0ddbf78514c.png",1),
+P("포인트오브뷰","카드·편지","와시 명함크기 카드 - Gray Ear-Edged",5000,null,0,"https://pointofview.kr/product/와시-명함크기-카드-washi-business-card-gray-ear-edged/9129/","https://pointofview.kr/web/product/big/202603/5438fd3f5f6363a4afc5a238a99b41be.png",1),
+P("포인트오브뷰","스티커","장서표 스티커세트 EX LIBRIS",9500,null,0,"https://pointofview.kr/product/장서표-스티커세트-ex-libris/9108/","https://pointofview.kr/web/product/big/202604/48a710a129a404af50606b1dc7c0d734.png",1),
+P("포인트오브뷰","노트·메모","스탬프 노트 Stamp Notebook",9500,null,0,"https://pointofview.kr/product/스탐프-노트-stamp-notebook/9106/","https://pointofview.kr/web/product/big/202604/0b953257d9b7c0f5bdda3a9b17e25e4f.png",1),
+P("포인트오브뷰","노트·메모","데일리 스케치 노트 B7 Grid",9500,null,0,"https://pointofview.kr/product/데일리-스케치-노트-b7-notebook-daily-sketch-b7-grid/9105/","https://pointofview.kr/web/product/big/202604/2540078f4f57467c4dbbaeb51718bf89.png",1),
+P("포인트오브뷰","노트·메모","데일리 스케치 미니 노트 B7",15800,null,0,"https://pointofview.kr/product/데일리-스케치-미니-노트-b7-notebook-daily-sketch-mini-b7/9104/","https://pointofview.kr/web/product/big/202604/347fe000c42fbe2aef064383e98dbed2.png",1),
+P("포인트오브뷰","노트·메모","미니 노트 & 책연필 기프트 세트",13500,null,0,"https://pointofview.kr/product/미니-노트-책연필-기프트-세트-mini-note-book-crayon-gift-set/9009/","https://pointofview.kr/web/product/big/202604/3b78a34a902e5a2f9ec775c0289807a6.png",1),
+P("포인트오브뷰","노트·메모","스파이럴 노트 B7 & 책연필 기프트 세트",17500,null,0,"https://pointofview.kr/product/스파이럴-노트-b7-책연필-기프트-세트-spiral-notebook-b7-book-crayon-gift-set/9008/","https://pointofview.kr/web/product/big/202604/dd415e06db00c7824a2f7b7e51a476b8.png",1),
+P("포인트오브뷰","노트·메모","스파이럴 노트 A6 & 레이즈 겔펜 기프트 세트",21000,null,0,"https://pointofview.kr/product/스타이럴-노트-a6-레이즈-겔펜-기프트-세트spiral-notebook-a6-rays-gel-pen-gift-set/9007/","https://pointofview.kr/web/product/big/202604/bae4b75061c2e117661fc3457c0e219e.png",1),
+P("포인트오브뷰","노트·메모","애플 저널 & 책연필 기프트 세트",30500,null,0,"https://pointofview.kr/product/애플-저널-책연필-기프트-세트-apple-journal-book-crayon-gift-set/9006/","https://pointofview.kr/web/product/big/202604/c77be99994a747aa0c656086fb534987.png",1),
+P("포인트오브뷰","노트·메모","애플 소프트 노트 & 연필 세트",33800,null,0,"https://pointofview.kr/product/애플-소프트-노트-연필-세트-apple-soft-notebook-pencil-set/9005/","https://pointofview.kr/web/product/big/202604/442ff11238d94a5500c2090bb19ac47d.png",1),
+P("포인트오브뷰","필기구","미니 볼펜 Mini Ballpoint Ink Pen 2",10800,null,0,"https://pointofview.kr/product/미니-볼펜-mini-ballpoint-ink-pen-2/9003/","https://pointofview.kr/web/product/big/202604/8585978d322a6af6dcd5ce5b774b3e25.png",1),
+P("포인트오브뷰","마스킹테이프","마스킹 테이프 MT x Mina Choucho Navy",4700,null,0,"https://pointofview.kr/product/마스킹-테이프-미나-페르호넨-mt-x-mina-choucho-navy/8989/","https://pointofview.kr/web/product/big/202604/95406a98b5d8820a02d8cdec11ccbcb6.png",1),
+P("포인트오브뷰","마스킹테이프","마스킹 테이프 MT x Mina Ring Vivid",4700,null,0,"https://pointofview.kr/product/마스킹-테이프-미나-페르호넨-mt-x-mina-ring-vivid/8988/","https://pointofview.kr/web/product/big/202604/957301f142d7c72f590650aed3bf7c90.png",1),
+P("포인트오브뷰","마스킹테이프","마스킹 테이프 MT x Mina Choucho Yellow",4700,null,0,"https://pointofview.kr/product/마스킹-테이프-미나-페르호넨-mt-x-mina-choucho-yellow/8987/","https://pointofview.kr/web/product/big/202604/b5e1840f8854e3c538792b6e3bc16178.png",1),
+P("포인트오브뷰","마스킹테이프","마스킹 테이프 MT Ex Mushrooms",3400,null,0,"https://pointofview.kr/product/마스킹-테이프-mt-ex-mushrooms/8986/","https://pointofview.kr/web/product/big/202604/d09930eb4be24f2325da27df24ebf150.png",1),
+P("포인트오브뷰","마스킹테이프","마스킹 테이프 MT x Mina Skip",7200,null,0,"https://pointofview.kr/product/마스킹-테이프-미나-페르호넨-mt-x-mina-skip/8985/","https://pointofview.kr/web/product/big/202604/87b7797b1dcf4dc762ba2ad28138adc8.png",1),
+P("포인트오브뷰","마스킹테이프","마스킹 테이프 MT x Mina Tambourine Petit",8400,null,0,"https://pointofview.kr/product/마스킹-테이프-미나-페르호넨-mt-x-mina-tambourine-petit/8984/","https://pointofview.kr/web/product/big/202604/3a0e14c1bcaa2e77bb88baca580bfed7.png",1),
+// ── 휘뚜 (hwittu.com) ──
+P("휘뚜","필기구","캡 노크 젤 잉크 볼펜 0.5mm",4000,null,0,"https://www.hwittu.com/products/?idx=923","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/02e06a455b3d5.jpg"),
+P("휘뚜","노트·메모","코코후센 미니 S",4100,null,0,"https://www.hwittu.com/products/?idx=958","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/e1d5920417b72.jpg"),
+P("휘뚜","필기구","SINDBAT 심 케이스 샤프 0.5mm",8500,null,0,"https://www.hwittu.com/products/?idx=1017","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/f7191dd1952f4.jpg"),
+P("휘뚜","데스크·소품","플라스틱 클립",2700,null,0,"https://www.hwittu.com/products/?idx=301","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/a2cd0387d21c8.jpg"),
+P("휘뚜","필기구","유니볼 원 피카 컬러 0.38/0.5mm",1700,null,0,"https://www.hwittu.com/products/?idx=295","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/a5391f86b8d20.jpg"),
+P("휘뚜","필기구","볼사인 iD 싱글",5700,null,0,"https://www.hwittu.com/products/?idx=972","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/a1c3720922d5e.jpg"),
+P("휘뚜","필기구","[리필] Art Multi 8 2mm 리드 홀더 전용",1300,null,0,"https://www.hwittu.com/products/?idx=819","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/fcdbbefaf5d31.jpg"),
+P("휘뚜","필기구","9850 연필",1400,null,0,"https://www.hwittu.com/products/?idx=712","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/3986aba291cf5.jpg"),
+P("휘뚜","데스크·소품","2 Way 글루 펜",3800,null,0,"https://www.hwittu.com/products/?idx=1043","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/e9dfa8c6b013c.jpg"),
+P("휘뚜","노트·메모","[리필] 002 MD 그리드 (패스포트 사이즈)",4500,null,0,"https://www.hwittu.com/products/?idx=346","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/42b2650d5631a.jpg"),
+P("휘뚜","필기구","[리필] 볼사인 iD 싱글 전용",1700,null,0,"https://www.hwittu.com/products/?idx=973","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/a5fb1fea1962d.jpg"),
+P("휘뚜","필기구","EnerGel 0.5mm 리필심",1200,null,0,"https://www.hwittu.com/products/?idx=924","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/e5f2b702a14cc.jpg"),
+P("휘뚜","데스크·소품","화이퍼 쁘띠 크림색 수정 테이프",2800,2000,0,"https://www.hwittu.com/products/?idx=439","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/fd96834853e11.jpg"),
+P("휘뚜","노트·메모","[리필] 021 연결밴드 (레귤러 사이즈)",5600,null,0,"https://www.hwittu.com/products/?idx=384","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/3d62a1703c14d.jpg"),
+P("휘뚜","필기구","6875 동물 그림 지우개 S",1200,null,0,"https://www.hwittu.com/products/?idx=988","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/6b57d6bfb2431.jpg"),
+P("휘뚜","파우치·가방","[리필] 004 지퍼 케이스 (패스포트 사이즈)",6800,null,0,"https://www.hwittu.com/products/?idx=348","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/1451a03b9ef95.jpg"),
+P("휘뚜","데스크·소품","iromoyo 미니 스탬프 패드",5800,null,0,"https://www.hwittu.com/products/?idx=902","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/2b65ade286e19.jpg"),
+P("휘뚜","데스크·소품","iromoyo 스탬프 패드",10000,8000,0,"https://www.hwittu.com/products/?idx=267","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/77c4ef4ecff2d.jpg"),
+P("휘뚜","파우치·가방","[리필] 008 지퍼 케이스 (레귤러 사이즈)",8800,null,0,"https://www.hwittu.com/products/?idx=373","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/fbf81d6287bb2.jpg"),
+P("휘뚜","필기구","사파리 쿠루토가 인사이드 샤프 0.5mm",50000,null,0,"https://www.hwittu.com/products/?idx=1042","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/763d569791e20.jpg"),
+P("휘뚜","노트·메모","츠바메노트 x 헬로키티",6000,null,0,"https://www.hwittu.com/products/?idx=1039","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/7cd3ad5b22164.jpg"),
+P("휘뚜","노트·메모","츠바메노트 x 산리오 캐릭터",6000,null,0,"https://www.hwittu.com/products/?idx=1038","https://cdn-optimized.imweb.me/upload/S2022050674ec0e8d38e5d/b12d694353eb5.jpg"),
+// ── 아이코닉 (icon-ic.com) ──
+P("아이코닉","노트·메모","이겨낸다 단어장",4000,3200,0,"https://icon-ic.com/shop/detail.php?pno=7C33E57E3DBD8A52940FA1A963AA4A4A","https://iconicdesign.wisacdn.com/_data/product/202604/21/5ea6e68afd6c11636dc4b5d825af90b6.jpg"),
+P("아이코닉","스티커","이형지 스티커북 A5",11000,8800,0,"https://icon-ic.com/shop/detail.php?pno=2F3C6A4CD8AF177F6456E7E51A916FF3","https://iconicdesign.wisacdn.com/_data/product/202604/21/dc6ce0192de3008cecef99956e243128.jpg"),
+P("아이코닉","플래너·스케줄러","이겨낸다 핸디 스터디플래너",7000,5600,0,"https://icon-ic.com/shop/detail.php?pno=EDB684859B848362EC56904286947614","https://iconicdesign.wisacdn.com/_data/product/202604/15/1776e15e6c94e113fdd65bbb48bc270c.jpg"),
+P("아이코닉","플래너·스케줄러","플로우 A4 위클리 플래너 패드",7000,5950,0,"https://icon-ic.com/shop/detail.php?pno=26310C700FFD1B5095454F336AE96648","https://iconicdesign.wisacdn.com/_data/product/202604/15/3b39ee95110e731a767883be26312283.jpg"),
+P("아이코닉","플래너·스케줄러","플로우 A4 먼슬리 플래너 패드",7000,5950,0,"https://icon-ic.com/shop/detail.php?pno=CFBC6C5CFB8A3E10FAB12AA3512153DF","https://iconicdesign.wisacdn.com/_data/product/202604/15/5d327ab61e08b151e07d0198abba6716.jpg"),
+P("아이코닉","플래너·스케줄러","슬로우 위클리 플래너",9800,7800,0,"https://icon-ic.com/shop/detail.php?pno=56A8DA1D3BCB2E9B334A778BE5B1D781","https://iconicdesign.wisacdn.com/_data/product/202604/07/4b720e84025dcfec67a3d2eb1eaf0217.jpg"),
+P("아이코닉","노트·메모","솔리튜드 B6 필사 모눈노트",11000,10000,0,"https://icon-ic.com/shop/detail.php?pno=543857F4A06C852113BCC02ABF295EB5","https://iconicdesign.wisacdn.com/_data/product/202604/07/c2af32f5c778edfea5fe4e3d64826961.jpg"),
+P("아이코닉","노트·메모","솔리튜드 B6 필사 라인노트",11000,10000,0,"https://icon-ic.com/shop/detail.php?pno=983A33A9A86796DF362C1108E00F54A6","https://iconicdesign.wisacdn.com/_data/product/202604/07/c9b5606da7dfc5f803931474494ab3db.jpg"),
+P("아이코닉","노트·메모","슬로우 B6 모눈노트",7800,6200,0,"https://icon-ic.com/shop/detail.php?pno=573F7F25B7B1EB79A4EC6BA896DEBEFD","https://iconicdesign.wisacdn.com/_data/product/202603/05/8011bad9e94052d3ccc6793a75a4cf6d.jpg"),
+P("아이코닉","다이어리·일기장","오피스 플래너 다이어리 v.2",17000,13600,0,"https://icon-ic.com/shop/detail.php?pno=124461DCD3571E6674EC4E0E140CC298","https://iconicdesign.wisacdn.com/_data/product/202602/12/3c05307198aee1640fd2490b705c6c95.jpg"),
+P("아이코닉","다이어리·일기장","일상집 5년 일기장 다이어리",24000,19200,0,"https://icon-ic.com/shop/detail.php?pno=D84210A75448034BCC4947005695C306","https://iconicdesign.wisacdn.com/_data/product/202601/27/57e99050a907471fde6f0f9b85806dff.jpg"),
+P("아이코닉","다이어리·일기장","일상집 3년 일기장 다이어리",21000,16800,0,"https://icon-ic.com/shop/detail.php?pno=1731592ACA5FB4D789C4119C65C10B4B","https://iconicdesign.wisacdn.com/_data/product/202601/27/5c54f6b2f80a9c3fe8ba89b2bdbf9444.jpg"),
+P("아이코닉","노트·메모","일상집 유선노트 A5",2800,2520,0,"https://icon-ic.com/shop/detail.php?pno=AB6439FA2DAF0246F92EEA433BCA5AC4","https://iconicdesign.wisacdn.com/_data/product/202601/16/87213bb334cd773af30f827fd3e5a70a.jpg"),
+P("아이코닉","노트·메모","하루 유선노트 A5",2800,2520,0,"https://icon-ic.com/shop/detail.php?pno=60DCC0D0012F3056175C01D54C2E1722","https://iconicdesign.wisacdn.com/_data/product/202601/16/1e6f44c6351ebe607d1ed7eac94afa38.jpg"),
+P("아이코닉","플래너·스케줄러","이겨낸다 스터디플래너",9800,7800,0,"https://icon-ic.com/shop/detail.php?pno=51A472C08E21AEF54ED749806E3E6490","https://iconicdesign.wisacdn.com/_data/product/202512/12/c09a273867493cab553c5b180d79fb63.jpg"),
+P("아이코닉","노트·메모","헤이즈 포켓노트 라인",3600,3200,0,"https://icon-ic.com/shop/detail.php?pno=9D740BD0F36AAA312C8D504E28C42163","https://iconicdesign.wisacdn.com/_data/product/202511/19/f757c2e80e3cbc18b01ed08ecf6de02a.jpg"),
+P("아이코닉","바인더·앨범","모멘트 4x6 1단 포켓 사진앨범",9000,7200,0,"https://icon-ic.com/shop/detail.php?pno=79FDE5402CBC75AE0615C9AE4C335B46","https://iconicdesign.wisacdn.com/_data/product/202604/15/6eacf673100e96d46f0452aed49e1f2b.jpg"),
+P("아이코닉","바인더·앨범","콜렉트 티켓북",9800,7800,0,"https://icon-ic.com/shop/detail.php?pno=D93591BDF7860E1E4EE2FCA799911215","https://iconicdesign.wisacdn.com/_data/product/202505/20/a295cd8ee121eeaf059435789a023c06.jpg"),
+P("아이코닉","바인더·앨범","그랜드 바인더 중형 내지 (5매)",1800,null,0,"https://icon-ic.com/shop/detail.php?pno=8E1AD7941398486F8CEDE7799B886B58","https://iconicdesign.wisacdn.com/_data/product/202505/16/c480d0b5bb34476cf049c90cc8b470b8.jpg"),
+// ── 비온뒤 (aftertherain0.com) ──
+P("비온뒤","바인더·앨범","데코포켓 A5 6공 바인더 리필 [양면]",2500,null,0,"https://aftertherain0.com/product/데코포켓-a5-6공-바인더-리필-양면/65/","https://aftertherain0.com/web/product/medium/202408/a8ffa2478bcb82b9cacba7b17dfd2b9d.jpg"),
+P("비온뒤","바인더·앨범","데코포켓 A6 6공 바인더 리필 [양면]",2000,null,0,"https://aftertherain0.com/product/데코포켓-a6-6공-바인더-리필-양면/74/","https://aftertherain0.com/web/product/medium/202409/dd882fde2a19d42c29806ff73fb1d847.jpg"),
+P("비온뒤","바인더·앨범","데코포켓 A5 와이드 6공 바인더 리필 [양면]",2700,null,0,"https://aftertherain0.com/product/데코포켓-a5-와이드-6공-바인더-리필-양면/47/","https://aftertherain0.com/web/product/medium/202407/db53743b0e7ac7e68ed17ed299b58cd1.jpg"),
+P("비온뒤","스티커","숏 인덱스 스티커",4600,null,0,"https://aftertherain0.com/product/숏-인덱스-스티커/254/","https://aftertherain0.com/web/product/medium/202606/bfdeb74b105791094d2a94302a4907d0.jpg"),
+P("비온뒤","바인더·앨범","데코포켓 A5 6공 바인더 커버",5500,null,0,"https://aftertherain0.com/product/데코포켓-a5-6공-바인더-커버/56/","https://aftertherain0.com/web/product/medium/202408/65df53d760d9b41bac38a6365c728983.jpg"),
+P("비온뒤","바인더·앨범","데코포켓 A5 6공 바인더 리필 [단면] - 맥시",1600,null,0,"https://aftertherain0.com/product/데코포켓-a5-6공-바인더-리필-단면-맥시/91/","https://aftertherain0.com/web/product/medium/202502/290e7af9772b7b3ddf5b6d83420049a8.jpg"),
+P("비온뒤","스티커","롱 인덱스 스티커",4600,null,0,"https://aftertherain0.com/product/롱-인덱스-스티커/108/","https://aftertherain0.com/web/product/medium/202508/20d19d12c606bb425ad63d4319e4f558.jpg"),
+P("비온뒤","스티커","독서 중독 스티커",2500,null,0,"https://aftertherain0.com/product/독서-중독-스티커/263/","https://aftertherain0.com/web/product/medium/202605/7e20740b7e1d900564765df667b39b94.jpg"),
+P("비온뒤","독서·북커버","문장 수집 투명 책갈피 세트",2800,null,0,"https://aftertherain0.com/product/문장-수집-투명-책갈피-세트/264/","https://aftertherain0.com/web/product/medium/202605/3542053ec8ac7a06072adb10318c86fc.jpg"),
+P("비온뒤","스티커","빙글빙글 일상 스티커팩 ver.2",6000,null,0,"https://aftertherain0.com/product/빙글빙글-일상-스티커팩-ver2/100/","https://aftertherain0.com/web/product/medium/202503/dc08ebdfc124043bb307b71a0cab9e07.jpg"),
+P("비온뒤","데스크·소품","빙글빙글 스탬프 1-20",4200,null,0,"https://aftertherain0.com/product/빙글빙글-스탬프-1-20/207/","https://aftertherain0.com/web/product/medium/202509/d77011a96d9a3f36161b8550c7475230.jpg"),
+P("비온뒤","스티커","빙글빙글 일상 스티커팩",6000,null,0,"https://aftertherain0.com/product/빙글빙글-일상-스티커팩/11/","https://aftertherain0.com/web/product/medium/202406/1465ee5ac22a8e196ac39f221bcba22a.jpg"),
+P("비온뒤","노트·메모","murmur.zip 모눈 노트",9800,null,0,"https://aftertherain0.com/product/murmurzip-모눈-노트/188/","https://aftertherain0.com/web/product/medium/202604/abf65d949388ac556fb685ff103b03da.jpg"),
+P("비온뒤","독서·북커버","셋 업 북웨어 [캔버스]",23800,null,0,"https://aftertherain0.com/product/셋-업-북웨어-캔버스/190/","https://aftertherain0.com/web/product/medium/202604/c0c089e623debbcf0c7ad9ce11eb5760.jpg"),
+P("비온뒤","바인더·앨범","핸디형 티켓북 catch your days ver.2",6500,null,0,"https://aftertherain0.com/product/핸디형-티켓북-catch-your-days-ver2/229/","https://aftertherain0.com/web/product/medium/202512/eed47ba47b55d89ec72462affec1ba3d.jpg"),
+P("비온뒤","다이어리·일기장","[만년형] 레이오버 데일리 저널 (INVENTARIO x BEON:D)",32500,null,0,"https://aftertherain0.com/product/만년형-레이오버-데일리-저널-inventario-x-beond/266/","https://aftertherain0.com/web/product/medium/202606/391b4b10f3f35c2a9f8516dcfc3a70dd.jpg"),
+P("비온뒤","독서·북커버","닷 투 닷 뜯어 쓰는 책갈피 [30장]",4500,null,0,"https://aftertherain0.com/product/닷-투-닷-뜯어-쓰는-책갈피-30장/265/","https://aftertherain0.com/web/product/medium/202606/1bf9db697f9bf1484ac129b595356c9e.jpg"),
+P("비온뒤","바인더·앨범","러버스 포토카드 홀더 & 홀더북 세트",10500,null,0,"https://aftertherain0.com/product/러버스-포토카드-홀더-홀더북-세트/262/","https://aftertherain0.com/web/product/medium/202605/6ddb3945879749f8922b15a280f6eee3.jpg"),
+P("비온뒤","바인더·앨범","데코포켓 A6 6공 바인더 PP 커버 포토카드 앨범 세트",10600,null,0,"https://aftertherain0.com/product/데코포켓-a6-6공-바인더-pp-커버-포토카드-앨범-세트/261/","https://aftertherain0.com/web/product/medium/202605/721d7912949c1074c38c3a8401710550.jpg"),
+P("비온뒤","바인더·앨범","데코포켓 A6 6공 바인더 PP 커버 네컷 앨범 세트",11000,null,0,"https://aftertherain0.com/product/데코포켓-a6-6공-바인더-pp-커버-네컷-앨범-세트/260/","https://aftertherain0.com/web/product/medium/202605/6660c78ba36841f80351a0ab6d01e92a.jpg"),
+// ── 세컨드맨션 (secondmansion.com) ──
+P("세컨드맨션","바인더·앨범","A5 6공 트윙클 커버 바인더 포토북",7500,null,0,"https://secondmansion.com/product/detail.html?product_no=696","https://secondmansion.com/web/product/medium/202302/4c47d1a94ae165ab4e8ad31203da1529.jpg",1),
+P("세컨드맨션","바인더·앨범","6공 홀로그램 커버",7500,null,0,"https://secondmansion.com/product/detail.html?product_no=695","https://secondmansion.com/web/product/medium/202302/9e4d4fb1d44899f745384425dfec4a8a.jpg",1),
+P("세컨드맨션","바인더·앨범","세컨드맨션 A5 6공 투명 커버",6500,null,0,"https://secondmansion.com/product/detail.html?product_no=694","https://secondmansion.com/web/product/medium/202302/563655e4ae210e28cee0272085f10320.jpg",1),
+P("세컨드맨션","바인더·앨범","세컨드맨션 A5 6공 체리미 북파우치 커버",17800,null,0,"https://secondmansion.com/product/detail.html?product_no=693","https://secondmansion.com/web/product/medium/202302/9404506b06548842c56f41de736d5c1b.jpg",1),
+P("세컨드맨션","다이어리·일기장","[1+1] 세컨드맨션 달의 기억 다이어리",9500,null,0,"https://secondmansion.com/product/detail.html?product_no=692","https://secondmansion.com/web/product/medium/202212/af7697f365c1aab117a3606be9c66f94.jpg",1),
+P("세컨드맨션","다이어리·일기장","[1+1] 세컨드맨션 문라잇 다이어리",9800,null,0,"https://secondmansion.com/product/detail.html?product_no=691","https://secondmansion.com/web/product/medium/202212/4e9bbfbc6b6ea60933d6c2a378fbb52c.jpg",1),
+P("세컨드맨션","바인더·앨범","A5 세컨드맨션 레인보우 6공 커버 바인더",19800,null,0,"https://secondmansion.com/product/detail.html?product_no=690","https://secondmansion.com/web/product/medium/202212/cf822422f7890ddbb3442662a0d8c544.jpg",1),
+P("세컨드맨션","다이어리·일기장","세컨드맨션 포에트리 다이어리",11800,null,0,"https://secondmansion.com/product/detail.html?product_no=689","https://secondmansion.com/web/product/medium/202212/f85f62766b58090721be3fac307d009b.jpg",1),
+P("세컨드맨션","다이어리·일기장","세컨드맨션 에디터 다이어리",11800,null,0,"https://secondmansion.com/product/detail.html?product_no=688","https://secondmansion.com/web/product/medium/202212/92e56c046780cdb022e08dbed395400f.jpg",1),
+P("세컨드맨션","다이어리·일기장","세컨드맨션 시그니쳐 다이어리",12500,null,0,"https://secondmansion.com/product/detail.html?product_no=687","https://secondmansion.com/web/product/medium/202212/d3bfe528dba86db3fd034af15a96ace6.jpg",1),
+P("세컨드맨션","다이어리·일기장","세컨드맨션 컴포지션 스냅 다이어리",12500,null,0,"https://secondmansion.com/product/detail.html?product_no=686","https://secondmansion.com/web/product/medium/202212/6d0695a19537bb193a8af61a91f736db.jpg",1),
+P("세컨드맨션","다이어리·일기장","세컨드맨션 콜렉트 다이어리",12500,null,0,"https://secondmansion.com/product/detail.html?product_no=685","https://secondmansion.com/web/product/medium/202212/ed97378eab67eb3489e6acc2abc6936d.jpg",1),
+P("세컨드맨션","다이어리·일기장","[스티커증정] 세컨드맨션 A5 6공 컴포지션 지퍼다이어리",20800,null,0,"https://secondmansion.com/product/detail.html?product_no=684","https://secondmansion.com/web/product/medium/202212/081dcc2279b6a1bbdd5ba7a1ec0ef47c.jpg",1),
+P("세컨드맨션","다이어리·일기장","[스티커증정] 세컨드맨션 A5 6공 레트로 지퍼 다이어리",20800,null,0,"https://secondmansion.com/product/detail.html?product_no=683","https://secondmansion.com/web/product/medium/202212/44ee8cf72fc3f84624264b2b8d0b344d.jpg",1),
+P("세컨드맨션","바인더·앨범","세컨드맨션 레코드 4X6 네컷 앨범",5900,null,0,"https://secondmansion.com/product/detail.html?product_no=675","https://secondmansion.com/web/product/medium/202212/3c4e3c9d0d7fb179b31768cf905904f8.jpg",1),
+P("세컨드맨션","바인더·앨범","세컨드맨션 레코드 네컷 앨범",5900,null,0,"https://secondmansion.com/product/detail.html?product_no=674","https://secondmansion.com/web/product/medium/202212/eca516152b0a3eb8c7649ce53c60dfed.jpg",1),
+P("세컨드맨션","바인더·앨범","A5 6공 체커보드 모눈 노트 바인더북",17800,null,0,"https://secondmansion.com/product/detail.html?product_no=673","https://secondmansion.com/web/product/medium/202206/75911eefce64bf1dfc429526d17dc0bf.jpg",1),
+P("세컨드맨션","바인더·앨범","A5 6공 프레임 바인더북 커버_지퍼형",15500,null,0,"https://secondmansion.com/product/detail.html?product_no=672","https://secondmansion.com/web/product/medium/202206/c201d7219b158e602b717cc6017322b9.jpg",1),
+// ── 바이풀디자인 (byfulldesign.co.kr) ──
+P("바이풀디자인","파우치·가방","트래블러스 메쉬파우치 슬림 롱 v.6",11500,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1068","https://byfulldesign.co.kr/web/product/medium/202604/09024e3361420ae1031191af137c5e7f.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 메쉬 파우치 슬림 미디움 v.6",13000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1069","https://byfulldesign.co.kr/web/product/medium/202604/0d4324a133cad44f6be3c57bf7c9a6a9.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 메쉬 파우치 올인원",18000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1070","https://byfulldesign.co.kr/web/product/medium/202604/b61dad1d9637d35da3383d3b8591252e.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 메쉬 파우치 포 아쿠아 슈즈",16500,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1071","https://byfulldesign.co.kr/web/product/medium/202604/de7716d8b7bdd8db75526c0077a99513.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 프라이빗 파우치 롱 세트 2개입",22000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1072","https://byfulldesign.co.kr/web/product/medium/202605/d4c89fda894fe190048e30cedfd3f038.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 여행용 프라이빗 파우치 세트 2개입",31000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1073","https://byfulldesign.co.kr/web/product/medium/202605/a2cca8ce45b5004820beb610486fb25f.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 여행용 베이직 파우치 세트 2개입",28000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1074","https://byfulldesign.co.kr/web/product/medium/202605/d2cfce13589c6eb9d9a7bd7f0f049209.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 여행용 스타터 킷 4개입",49500,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1075","https://byfulldesign.co.kr/web/product/medium/202605/1be7622f6109c1b90711774fc0193c61.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 메쉬백 큐브",35000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1076","https://byfulldesign.co.kr/web/product/medium/202604/71f5f3e8f2669847c3bb41b63f4a1f8f.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 에어백 보스턴 확장형",69000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1077","https://byfulldesign.co.kr/web/product/medium/202604/060c41f034c4ed28d9e883d7f99e0f9e.jpg"),
+P("바이풀디자인","다이어리·일기장","기억보관함 핸디 일간 2026년",27500,19250,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1019","https://byfulldesign.co.kr/web/product/medium/202509/4fa65caa779da7c99b544f76191bfb3d.jpg"),
+P("바이풀디자인","파우치·가방","뱅크북 포켓 v.6",22500,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=877","https://byfulldesign.co.kr/web/product/medium/202311/d6f2520f3e95ef5639d71a396838d36d.jpg"),
+P("바이풀디자인","파우치·가방","트래블러스 백팩 포 캐주얼 v.2",99000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=819","https://byfulldesign.co.kr/web/product/medium/202304/316eff5df7baa03e4d554532fb2a0375.jpg"),
+P("바이풀디자인","파우치·가방","펜슬포켓 더블 v.7",21500,18270,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1054","https://byfulldesign.co.kr/web/product/medium/202511/3b3aee7fcdd7a1469328121c565c373e.jpg"),
+P("바이풀디자인","다이어리·일기장","기억보관함 미디움 주간 가로형 2026년",27500,19250,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1023","https://byfulldesign.co.kr/web/product/medium/202509/4bcb087422e682322c6572073acb93c3.jpg"),
+P("바이풀디자인","플래너·스케줄러","생각보관함 위클리 매니저 핸디 2026년",14000,11200,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1029","https://byfulldesign.co.kr/web/product/medium/202509/9427477dc6e67b85cebfb18d33f56a57.jpg"),
+P("바이풀디자인","파우치·가방","멀티포켓 미니 v.5",12000,null,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1055","https://byfulldesign.co.kr/web/product/medium/202511/5832036d9d10b94d8201c3e418f7313a.jpg"),
+P("바이풀디자인","파우치·가방","펜슬포켓 세미싱글 v.2",9000,8100,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1050","https://byfulldesign.co.kr/web/product/medium/202511/ec6e0c40c7847ab453837839ef5e4dd2.jpg"),
+P("바이풀디자인","파우치·가방","펜슬포켓 싱글 v.8",10500,9450,0,"https://byfulldesign.co.kr/product/detail.html?product_no=1051","https://byfulldesign.co.kr/web/product/medium/202511/7edaed85005b98bebdfd323172f66a96.jpg"),
+// ── 잼스튜디오 (jamshop.co.kr) ──
+P("잼스튜디오","바인더·앨범","띠부씰 도감 바인더 미니",14800,null,0,"https://jamshop.co.kr/product/띠부씰-도감-바인더-미니/749/","https://jamshop.co.kr/web/product/medium/202605/0724c4903cfee1d2a8e14d7ab81053cc.jpg"),
+P("잼스튜디오","바인더·앨범","띠부씰 도감 바인더",17800,null,0,"https://jamshop.co.kr/product/띠부씰-도감-바인더/748/","https://jamshop.co.kr/web/product/medium/202605/c2e0880b9a8c9411d38703c7b533ad13.jpg"),
+P("잼스튜디오","카드·편지","용돈 봉투 세트 A",3000,null,0,"https://jamshop.co.kr/product/용돈-봉투-세트-a/744/","https://jamshop.co.kr/web/product/medium/202604/50ac9fa716209875e2cea0f4af600c95.jpg"),
+P("잼스튜디오","카드·편지","용돈 봉투 세트 B",3000,null,0,"https://jamshop.co.kr/product/용돈-봉투-세트-b/745/","https://jamshop.co.kr/web/product/medium/202604/0c8a0a455b3e5ed17a2e3b37f8cc0a36.jpg"),
+P("잼스튜디오","카드·편지","용돈 봉투 세트 C",3000,null,0,"https://jamshop.co.kr/product/용돈-봉투-세트-c/746/","https://jamshop.co.kr/web/product/medium/202604/a1a7db5ec922cd73ddc5816d347600d0.jpg"),
+P("잼스튜디오","노트·메모","오답 정리 메모지",2800,null,0,"https://jamshop.co.kr/product/오답-정리-메모지/735/","https://jamshop.co.kr/web/product/medium/202507/3f13b99d4db0102d8de27d5546521845.jpg"),
+P("잼스튜디오","노트·메모","필독도서 메모지",2800,null,0,"https://jamshop.co.kr/product/필독도서-메모지/734/","https://jamshop.co.kr/web/product/medium/202507/1f1a09e7005396bf733aa84aaff8e0b3.jpg"),
+P("잼스튜디오","노트·메모","단어 메모지",2800,null,0,"https://jamshop.co.kr/product/단어-메모지/733/","https://jamshop.co.kr/web/product/medium/202507/31ae8ba62d0f2184907c398c7e0c50ae.jpg"),
+P("잼스튜디오","플래너·스케줄러","100일 플래너",11000,null,0,"https://jamshop.co.kr/product/100일-플래너/732/","https://jamshop.co.kr/web/product/medium/202507/2a0a270463dd20f5e76a0b349f602322.jpg"),
+P("잼스튜디오","바인더·앨범","티니씰 스티커바인더",16800,null,0,"https://jamshop.co.kr/product/티니씰-스티커바인더/730/","https://jamshop.co.kr/web/product/medium/202504/6adc471e6396cd8c8354984318c59c36.jpg"),
+P("잼스튜디오","리빙·굿즈","어버이날 키링",5000,null,0,"https://jamshop.co.kr/product/어버이날-키링/729/","https://jamshop.co.kr/web/product/medium/202504/b95eb2caef46a771215f03f53fc1d183.jpg"),
+P("잼스튜디오","카드·편지","감사용돈카드 - 우리사이",3000,null,0,"https://jamshop.co.kr/product/감사용돈카드-우리사이/728/","https://jamshop.co.kr/web/product/medium/202504/6d8462cc7473779c2ed31452bd7c636e.jpg"),
+P("잼스튜디오","카드·편지","감사용돈카드 - 신랑신부",3000,null,0,"https://jamshop.co.kr/product/감사용돈카드-신랑신부/727/","https://jamshop.co.kr/web/product/medium/202504/7fbdfa0878c166c80537099e2fc2329d.jpg"),
+P("잼스튜디오","카드·편지","감사용돈카드 - 엄마아빠",3000,null,0,"https://jamshop.co.kr/product/감사용돈카드-엄마아빠/726/","https://jamshop.co.kr/web/product/medium/202504/cc3258ba12a236a534b0e142cbe2a0e8.jpg"),
+P("잼스튜디오","노트·메모","토익 OMR 연습 메모지",3500,null,0,"https://jamshop.co.kr/product/토익-omr-연습-메모지/721/","https://jamshop.co.kr/web/product/medium/202503/0d0355b1a469942c269f2b4238de6f56.png"),
+P("잼스튜디오","플래너·스케줄러","플랜잇 스터디플래너",11000,null,0,"https://jamshop.co.kr/product/플랜잇-스터디플래너/724/","https://jamshop.co.kr/web/product/medium/202503/d7ef0f36807b81503c8891606edfe73b.png"),
+P("잼스튜디오","플래너·스케줄러","포켓 노트북 플래너",11000,null,0,"https://jamshop.co.kr/product/포켓-노트북-플래너/723/","https://jamshop.co.kr/web/product/medium/202503/578eb557ad95bf7103b6904a718dda3c.png"),
+P("잼스튜디오","플래너·스케줄러","6개월 플래너 (만년형)",11000,null,0,"https://jamshop.co.kr/product/6개월-플래너-만년형/722/","https://jamshop.co.kr/web/product/medium/202503/000fb467006978cb9094863261343f77.png"),
+P("잼스튜디오","노트·메모","수능 OMR 연습 메모지",2800,null,0,"https://jamshop.co.kr/product/수능-omr-연습-메모지/720/","https://jamshop.co.kr/web/product/medium/202503/4a051f73b192e71a1a3d4f3498979590.png"),
+P("잼스튜디오","노트·메모","필독 도서 50권 메모지",2800,null,0,"https://jamshop.co.kr/product/필독-도서-50권-메모지/719/","https://jamshop.co.kr/web/product/medium/202503/88d0843c92a8fd6a696ee8a8054b4260.png"),
+// ── 아르디움 (ardium.co.kr) ──
+P("아르디움","노트·메모","아임 라이트 노트",17900,null,0,"https://ardium.co.kr/product/아임-라이트-노트/3293/","https://ardium.co.kr/web/product/medium/202502/7a143802678b515d3fb5c43a6aceefd6.jpg"),
+P("아르디움","플래너·스케줄러","1440 스터디 플래너 라이트 M (3개월 만년형)",5500,null,0,"https://ardium.co.kr/product/1440-스터디-플래너-라이트-m-3개월-만년형/3377/","https://ardium.co.kr/web/product/medium/202602/9371606a6bf0613d5960fba447878936.jpg"),
+P("아르디움","노트·메모","지오메트릭 노트 XL 세트",4300,null,0,"https://ardium.co.kr/product/지오메트릭-노트-xl-세트/868/","https://ardium.co.kr/web/product/medium/storedada_868.jpg"),
+P("아르디움","스티커","아르디움 컬러포인트 ver.5 스티커 팩",13300,9000,0,"https://ardium.co.kr/product/아르디움-컬러포인트-ver5-스티커-팩/2909/","https://ardium.co.kr/web/product/medium/202306/cfc9739c6a4c5e191ddc8ed2c997db58.jpg"),
+P("아르디움","플래너·스케줄러","아르디움 위라이크 스터디플래너",3500,null,0,"https://ardium.co.kr/product/아르디움-위라이크-스터디플래너/2313/","https://ardium.co.kr/web/product/medium/202306/62d0a532d8639504a4960a1b075ec4b8.jpg"),
+P("아르디움","독서·북커버","모노스 블랙 책갈피",1000,null,0,"https://ardium.co.kr/product/모노스-블랙-책갈피/3390/","https://ardium.co.kr/web/product/medium/202607/32968787c8d05b2245a844819f0046dd.jpg"),
+P("아르디움","노트·메모","모노스 블랙 잉크룸 라인 노트",9900,null,0,"https://ardium.co.kr/product/모노스-블랙-잉크룸-라인-노트/3389/","https://ardium.co.kr/web/product/medium/202607/d564fe8ba20452efe8fbafd0ec8a108e.jpg"),
+P("아르디움","노트·메모","모노스 블랙 라인 노트",9900,null,0,"https://ardium.co.kr/product/모노스-블랙-라인-노트/3387/","https://ardium.co.kr/web/product/medium/202607/432191d6a0c655a46e66a6355159bb7a.jpg"),
+P("아르디움","리빙·굿즈","아르디움 행운 가득 럭키 박스 A type",38100,9900,0,"https://ardium.co.kr/product/아르디움-행운-가득-럭키-박스a-type/3310/","https://ardium.co.kr/web/product/medium/202504/0a7b207eb015c0e4260c821f6f07f322.jpg"),
+P("아르디움","리빙·굿즈","아르디움 행운 가득 럭키 박스 B type",38700,9900,0,"https://ardium.co.kr/product/아르디움-행운-가득-럭키-박스b-type/3309/","https://ardium.co.kr/web/product/medium/202504/9513ed5d4f9a3338c6a9bb41b44dc61e.jpg"),
+P("아르디움","파우치·가방","폴딩 보스턴백 (50% 할인)",18400,null,0,"https://ardium.co.kr/product/폴딩-보스턴백-50-할인/1011/","https://ardium.co.kr/web/product/medium/202306/716ab655ee38b02c66f241a17e5c8a75.jpg"),
+P("아르디움","파우치·가방","아르디움 시크릿 백 (60% 할인)",7800,null,0,"https://ardium.co.kr/product/아르디움-시크릿-백-60-할인/774/","https://ardium.co.kr/web/product/medium/202404/d2ca0730e12752cd483619e8ce0a360f.jpg"),
+P("아르디움","리빙·굿즈","트래블 멀티 네임텍 (50% 할인)",6900,null,0,"https://ardium.co.kr/product/트래블-멀티-네임텍-50-할인/562/","https://ardium.co.kr/web/product/medium/storedada_562.jpg"),
+P("아르디움","리빙·굿즈","패턴 트래블 멀티 네임텍 (50% 할인)",7400,null,0,"https://ardium.co.kr/product/패턴-트래블-멀티-네임텍-50-할인/670/","https://ardium.co.kr/web/product/medium/storedada_670.jpg"),
+P("아르디움","파우치·가방","트래블 메쉬 파우치 세트 (60% 할인)",8720,null,0,"https://ardium.co.kr/product/트래블-메쉬-파우치-세트-60-할인/787/","https://ardium.co.kr/web/product/medium/202308/0cf2768eced7a44d060df91ddb09239c.jpg"),
+P("아르디움","파우치·가방","트래블 멀티 파우치 (50% 할인)",9450,null,0,"https://ardium.co.kr/product/트래블-멀티-파우치-50-할인/1014/","https://ardium.co.kr/web/product/medium/202306/b161f163fdc81a6e7cf1799ec3c6983b.jpg"),
+P("아르디움","스티커","[주문제작] 아르디움 네임스티커 방수 이름표",10000,7000,0,"https://ardium.co.kr/product/주문제작-3-4일-소요-아르디움-네임스티커-방수-이름표-어린이집-준비물-1장-단품-이름-개수-28-72개/3297/","https://ardium.co.kr/web/product/medium/202502/acc35b9ca02b0877e9ec0891718db293.jpg"),
+P("아르디움","스티커","아르디움 멀티 롤스티커 (1.5m)",18900,null,0,"https://ardium.co.kr/product/아르디움-멀티-롤스티커15m-유리컵-전사지-방수-캐리어-스티커/3301/","https://ardium.co.kr/web/product/medium/202503/ba6afde57015d921923eb66354a77579.jpg"),
+P("아르디움","스티커","아르디움 아티스트 멀티 스티커",4000,null,0,"https://ardium.co.kr/product/아르디움-아티스트-멀티-스티커/3285/","https://ardium.co.kr/web/product/medium/202501/ac0ced89f73c85a61bce27139e7bc83b.jpg"),
+];
+
+let products = [];
+let isDemo = false;
+
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      products = d.products || [];
+      isDemo = !!d.isDemo;
+      const ver = d.seedVersion || 1;
+      if (isDemo || !products.length) {
+        // 예시 데이터였다면 실제 수집 데이터로 통째로 교체
+        products = SEED.map((p, i) => ({ ...p, id: "seed" + i }));
+        isDemo = false;
+        persist();
+      } else if (ver < SEED_VERSION) {
+        // 수집 데이터가 갱신되면: 새 제품은 NEW로 추가, 기존 제품은 업데이트
+        SEED.forEach(o => upsertProduct(o));
+        persist();
+      }
+      return;
+    }
+  } catch (e) {}
+  products = SEED.map((p, i) => ({ ...p, id: "seed" + i }));
+  isDemo = false;
+  persist();
+}
+function persist() {
+  localStorage.setItem(LS_KEY, JSON.stringify({ products, isDemo, seedVersion: SEED_VERSION }));
+}
+function newId() { return "p" + Date.now() + Math.random().toString(36).slice(2, 6); }
+
+// ═══════════════ 필터 상태 ═══════════════
+let filter = { mall: "전체", cat: "전체", q: "", hideSoldout: false };
+let sortKey = "pop";
+let view = "grid";       // grid | table
+let compareMode = false;
+let grouped = false;     // 카테고리별 묶어보기
+
+const NEW_MS = 7 * 86400000;   // 대시보드에 추가된 지 7일 이내면 NEW
+const isNew = p => p.addedAt && (Date.now() - p.addedAt < NEW_MS);
+
+const fmt = n => n == null ? "-" : Number(n).toLocaleString("ko-KR");
+const priceOf = p => (p.sale != null && p.sale !== "" ? +p.sale : +p.price) || 0;
+const pctOf = p => (p.sale != null && p.sale !== "" && +p.price > 0 && +p.sale < +p.price)
+  ? Math.round((1 - p.sale / p.price) * 100) : 0;
+
+function mallColor(mall) {
+  const malls = [...new Set(products.map(p => p.mall))].sort();
+  return MALL_COLORS[malls.indexOf(mall) % MALL_COLORS.length];
+}
+
+function filtered() {
+  let list = products.filter(p =>
+    (filter.mall === "전체" || p.mall === filter.mall) &&
+    (filter.cat === "전체" || (filter.cat === "__new__" ? isNew(p) : p.category === filter.cat)) &&
+    (!filter.hideSoldout || !p.soldout) &&
+    (!filter.q || (p.name || "").toLowerCase().includes(filter.q))
+  );
+  const cmp = {
+    // 판매량 정보가 없는 몰은 리뷰 수를 인기 지표로 사용
+    pop:       (a, b) => (b.sales || 0) - (a.sales || 0) || (b.reviews || 0) - (a.reviews || 0),
+    review:    (a, b) => (b.reviews || 0) - (a.reviews || 0),
+    rating:    (a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviews || 0) - (a.reviews || 0),
+    priceAsc:  (a, b) => priceOf(a) - priceOf(b),
+    priceDesc: (a, b) => priceOf(b) - priceOf(a),
+    sale:      (a, b) => pctOf(b) - pctOf(a),
+    new:       (a, b) => (b.date || "").localeCompare(a.date || ""),
+    name:      (a, b) => (a.name || "").localeCompare(b.name || "", "ko"),
+  };
+  return list.sort(cmp[sortKey] || cmp.pop);
+}
+
+// ═══════════════ 렌더 ═══════════════
+// 헤더 문구: 제품이 있는 몰 + 바로가기에 등록한 브랜드를 합쳐서 자동 집계
+// ("○○ 스마트스토어"처럼 같은 브랜드의 다른 채널은 하나로 칩니다)
+function updateHint() {
+  const set = new Set(products.map(p => p.mall));
+  links.forEach(l => {
+    const name = (l.name || "").replace(/\s*(스마트스토어|브랜드스토어|공식몰|공식스토어|스토어)$/, "").trim();
+    if (name) set.add(name);
+  });
+  const el = document.getElementById("mallHint");
+  if (el) el.textContent = `문구 브랜드 ${set.size}곳 상품 모아보기`;
+}
+
+function render() {
+  document.getElementById("demoBanner").style.display = isDemo && products.length ? "flex" : "none";
+  updateHint();
+  renderChips();
+  const list = filtered();
+  document.getElementById("resultCnt").textContent = `${list.length}개 제품`;
+
+  const grid = document.getElementById("grid");
+  const tableWrap = document.getElementById("tableWrap");
+  const cmpWrap = document.getElementById("compareWrap");
+  grid.style.display = "none"; tableWrap.style.display = "none"; cmpWrap.style.display = "none";
+  document.getElementById("emptyMsg").style.display = list.length ? "none" : "block";
+  if (!list.length) return;
+
+  if (compareMode) { renderCompare(list); cmpWrap.style.display = "block"; }
+  else if (view === "table") { renderTable(list); tableWrap.style.display = "block"; }
+  else { renderGrid(list); grid.style.display = grouped ? "block" : "grid"; }
+}
+
+function chipHtml(items, cur, key) {
+  const counts = {};
+  products.forEach(p => {
+    const v = key === "mall" ? p.mall : p.category;
+    counts[v] = (counts[v] || 0) + 1;
+  });
+  return ["전체", ...items].map(v =>
+    `<button class="chip${v === cur ? " on" : ""}" data-k="${key}" data-v="${v}">${v}` +
+    (v === "전체" ? `<span class="cnt">${products.length}</span>` : `<span class="cnt">${counts[v] || 0}</span>`) +
+    `</button>`
+  ).join("");
+}
+function renderChips() {
+  const malls = [...new Set(products.map(p => p.mall))].sort();
+  const cats = [...new Set(products.map(p => p.category))].sort();
+  if (filter.mall !== "전체" && !malls.includes(filter.mall)) filter.mall = "전체";
+  if (filter.cat !== "전체" && filter.cat !== "__new__" && !cats.includes(filter.cat)) filter.cat = "전체";
+  if (filter.cat === "__new__" && !products.some(isNew)) filter.cat = "전체";
+
+  // 쇼핑몰 칩 + 선택한 몰의 사이트 바로가기 (바로가기 목록에서 이름 매칭)
+  let mallRow = '<span class="rowLbl">쇼핑몰</span>' + chipHtml(malls, filter.mall, "mall");
+  if (filter.mall !== "전체") {
+    const lk = findMallLink(filter.mall);
+    if (lk) mallRow += `<a class="chip" href="${escHtml(lk.url)}" target="_blank" rel="noopener" title="${escHtml(lk.url)}">↗ ${escHtml(filter.mall)} 사이트 열기</a>`;
+  }
+  document.getElementById("mallChips").innerHTML = mallRow;
+
+  // 카테고리 칩: '전체' 바로 뒤에 🆕 NEW 칩 삽입
+  const newCount = products.filter(isNew).length;
+  const newChip = newCount
+    ? `<button class="chip${filter.cat === "__new__" ? " on" : ""}" data-k="cat" data-v="__new__">🆕 NEW<span class="cnt">${newCount}</span></button>`
+    : "";
+  const catHtml = chipHtml(cats, filter.cat, "cat");
+  const cut = catHtml.indexOf("</button>") + 9;
+  document.getElementById("catChips").innerHTML =
+    '<span class="rowLbl">카테고리</span>' + catHtml.slice(0, cut) + newChip + catHtml.slice(cut);
+
+  document.querySelectorAll("#mallChips .chip[data-k], #catChips .chip[data-k]").forEach(c => c.onclick = () => {
+    if (c.dataset.k === "mall") filter.mall = c.dataset.v;
+    else filter.cat = c.dataset.v;
+    render();
+  });
+  renderKeywords();
+  // 모달 datalist도 갱신
+  document.getElementById("mallList").innerHTML = malls.map(m => `<option value="${m}">`).join("");
+  document.getElementById("catList").innerHTML = cats.map(c => `<option value="${c}">`).join("");
+}
+
+function cardHtml(p, rank) {
+  const pct = pctOf(p);
+  const showRank = (sortKey === "pop" || sortKey === "review") && rank < 3 && !filter.q;
+  const rankLbl = sortKey === "review" ? `리뷰 ${rank + 1}위` : `BEST ${rank + 1}`;
+  return `<div class="card" data-id="${p.id}">
+    <div class="imgBox">
+      ${p.img ? `<img src="${p.img}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : `<div class="noImg">📦</div>`}
+      ${showRank ? `<div class="rankBadge${rank === 0 ? " gold" : ""}">${rankLbl}</div>` : ""}
+      <div class="badges">
+        ${isNew(p) ? `<span class="badge new">NEW</span>` : ""}
+        ${pct ? `<span class="badge sale">${pct}%</span>` : ""}
+        ${p.soldout ? `<span class="badge out">품절</span>` : ""}
+      </div>
+    </div>
+    <div class="body">
+      <span class="mallTag" data-mall="${escHtml(p.mall)}" title="이 쇼핑몰 제품만 보기" style="background:${mallColor(p.mall)}18;color:${mallColor(p.mall)};">● ${p.mall}</span>
+      <span class="catTag">${p.category}</span>
+      <div class="name">${p.name}</div>
+      <div class="priceRow">
+        ${pct ? `<span class="pct">${pct}%</span>` : ""}
+        <span class="now">${fmt(priceOf(p))}원</span>
+        ${pct ? `<span class="was">${fmt(p.price)}원</span>` : ""}
+      </div>
+      <div class="metaRow">
+        <span>🔥 <b>${fmt(p.sales)}</b></span>
+        <span>💬 <b>${fmt(p.reviews)}</b></span>
+        <span class="star">★ ${p.rating || "-"}</span>
+        ${p.url ? `<a class="cardLink" href="${escHtml(p.url)}" target="_blank" rel="noopener" title="상품 페이지 열기" onclick="event.stopPropagation()">🔗</a>` : ""}
+      </div>
+    </div>
+  </div>`;
+}
+function renderGrid(list) {
+  const grid = document.getElementById("grid");
+  if (grouped) {
+    // 카테고리별 섹션으로 묶어서 표시 (NEW 먼저, 나머지 가나다순)
+    const groups = {};
+    list.forEach(p => (groups[p.category] = groups[p.category] || []).push(p));
+    grid.innerHTML = Object.keys(groups).sort((a, b) => a.localeCompare(b, "ko")).map(cat =>
+      `<div class="groupHead">📂 ${escHtml(cat)}<span class="cnt">${groups[cat].length}개</span></div>` +
+      `<div class="groupGrid">${groups[cat].map(p => cardHtml(p, 99)).join("")}</div>`
+    ).join("");
+  } else {
+    grid.innerHTML = list.map((p, i) => cardHtml(p, i)).join("");
+  }
+  grid.querySelectorAll(".card").forEach(c => c.onclick = () => openEdit(c.dataset.id));
+  bindMallTags(grid);
+}
+// 쇼핑몰 이름 클릭 → 그 몰 제품만 필터
+function bindMallTags(root) {
+  root.querySelectorAll(".mallTag[data-mall]").forEach(t => t.onclick = e => {
+    e.stopPropagation();
+    filter.mall = t.dataset.mall;
+    render();
+  });
+}
+// 바로가기 목록에서 쇼핑몰 이름과 맞는 주소 찾기
+function findMallLink(mall) {
+  const m = (mall || "").trim().toLowerCase();
+  if (!m) return null;
+  return links.find(l => l.name.trim().toLowerCase() === m)
+      || links.find(l => l.name.toLowerCase().includes(m) || m.includes(l.name.toLowerCase()))
+      || null;
+}
+
+function renderTable(list) {
+  const rows = list.map((p, i) => `<tr data-id="${p.id}">
+    <td>${i + 1}</td>
+    <td class="name">${p.name}${isNew(p) ? ' <span class="badge new">NEW</span>' : ""}${p.soldout ? ' <span class="badge out">품절</span>' : ""}</td>
+    <td><span class="mallTag" data-mall="${escHtml(p.mall)}" title="이 쇼핑몰 제품만 보기" style="background:${mallColor(p.mall)}18;color:${mallColor(p.mall)};">${p.mall}</span></td>
+    <td>${p.category}</td>
+    <td><b>${fmt(priceOf(p))}원</b>${pctOf(p) ? `<span class="was">${fmt(p.price)}원</span>` : ""}</td>
+    <td>${pctOf(p) ? pctOf(p) + "%" : "-"}</td>
+    <td>${fmt(p.sales)}</td>
+    <td>${fmt(p.reviews)}</td>
+    <td>${p.rating || "-"}</td>
+    <td>${p.date || "-"}</td>
+    <td>${p.url ? `<a href="${p.url}" target="_blank" onclick="event.stopPropagation()">열기</a>` : "-"}</td>
+  </tr>`).join("");
+  const heads = [["", null], ["제품명", "name"], ["쇼핑몰", null], ["카테고리", null], ["판매가", "priceAsc"],
+    ["할인", "sale"], ["판매량", "pop"], ["리뷰", "review"], ["평점", "rating"], ["등록일", "new"], ["링크", null]];
+  document.getElementById("tableWrap").innerHTML = `<table>
+    <thead><tr>${heads.map(([h, k]) => `<th${k ? ` data-sort="${k}"` : ""}>${h}${k && sortKey === k ? " ▼" : ""}</th>`).join("")}</tr></thead>
+    <tbody>${rows}</tbody></table>`;
+  document.querySelectorAll("th[data-sort]").forEach(th => th.onclick = () => {
+    sortKey = th.dataset.sort;
+    document.getElementById("sortSel").value = sortKey;
+    render();
+  });
+  document.querySelectorAll("tbody tr").forEach(tr => tr.onclick = () => openEdit(tr.dataset.id));
+  bindMallTags(document.getElementById("tableWrap"));
+}
+
+// 같은 제품명이 여러 몰에 있으면 묶어서 가격 비교
+function renderCompare(list) {
+  const groups = {};
+  list.forEach(p => {
+    const key = (p.name || "").replace(/\s+/g, " ").trim().toLowerCase();
+    (groups[key] = groups[key] || []).push(p);
+  });
+  const multi = Object.values(groups).filter(g => g.length > 1);
+  const single = Object.values(groups).filter(g => g.length === 1);
+  const block = (g) => {
+    const low = Math.min(...g.map(priceOf));
+    return `<div class="cmpCard"><h3>${g[0].name}</h3>` +
+      g.sort((a, b) => priceOf(a) - priceOf(b)).map(p => `
+        <div class="cmpRow${priceOf(p) === low ? " low" : ""}" >
+          <span class="mallTag" style="background:${mallColor(p.mall)}18;color:${mallColor(p.mall)};">● ${p.mall}</span>
+          <span style="color:var(--sub);font-size:11.5px;">🔥 ${fmt(p.sales)} · 💬 ${fmt(p.reviews)} · ★ ${p.rating || "-"}</span>
+          ${priceOf(p) === low ? '<span class="lowTag">최저가</span>' : ""}
+          <span class="price">${fmt(priceOf(p))}원</span>
+        </div>`).join("") + `</div>`;
+  };
+  document.getElementById("compareWrap").innerHTML =
+    (multi.length
+      ? `<div class="cmpNote" style="padding:0 0 10px;">✅ ${multi.length}개 제품이 2개 이상 쇼핑몰에서 판매 중이에요. 초록색이 최저가 판매처입니다.</div>` + multi.map(block).join("")
+      : `<div class="cmpNote" style="padding:0 0 10px;">여러 쇼핑몰에 같이 올라간 제품이 없어요.</div>`) +
+    (single.length ? `<div class="cmpNote" style="padding:14px 0 10px;">아래는 한 곳에서만 판매 중인 제품입니다.</div>` + single.map(block).join("") : "");
+}
+
+// ═══════════════ 제품 추가/수정 모달 ═══════════════
+let editingId = null;
+const $ = id => document.getElementById(id);
+
+function openEdit(id) {
+  editingId = id || null;
+  const p = id ? products.find(x => x.id === id) : null;
+  $("editTitle").textContent = p ? "제품 수정" : "제품 추가";
+  $("delBtn").style.display = p ? "block" : "none";
+  $("fName").value = p ? p.name : "";
+  $("fMall").value = p ? p.mall : "";
+  $("fCat").value = p ? p.category : "";
+  $("fPrice").value = p ? p.price ?? "" : "";
+  $("fSale").value = p ? p.sale ?? "" : "";
+  $("fSales").value = p ? p.sales ?? "" : "";
+  $("fReviews").value = p ? p.reviews ?? "" : "";
+  $("fRating").value = p ? p.rating ?? "" : "";
+  $("fDate").value = p ? p.date || "" : "";
+  $("fUrl").value = p ? p.url || "" : "";
+  $("fImg").value = p ? p.img || "" : "";
+  $("fSoldout").checked = p ? !!p.soldout : false;
+  $("editModal").classList.add("open");
+  $("fName").focus();
+}
+$("cancelBtn").onclick = () => $("editModal").classList.remove("open");
+$("saveBtn").onclick = () => {
+  const name = $("fName").value.trim();
+  const mall = $("fMall").value.trim();
+  const cat = $("fCat").value.trim() || autoCategory(name);   // 비우면 제품명으로 자동 분류
+  if (!name || !mall) { alert("제품명과 쇼핑몰은 필수입니다."); return; }
+  const data = {
+    name, mall, category: cat,
+    price: +$("fPrice").value || 0,
+    sale: $("fSale").value === "" ? null : +$("fSale").value,
+    sales: +$("fSales").value || 0,
+    reviews: +$("fReviews").value || 0,
+    rating: $("fRating").value === "" ? null : +$("fRating").value,
+    date: $("fDate").value || "",
+    url: $("fUrl").value.trim(),
+    img: $("fImg").value.trim(),
+    soldout: $("fSoldout").checked,
+  };
+  if (editingId) {
+    const i = products.findIndex(x => x.id === editingId);
+    products[i] = { ...products[i], ...data };
+  } else {
+    products.push({ id: newId(), addedAt: Date.now(), ...data });
+    isDemo = false;
+  }
+  persist();
+  $("editModal").classList.remove("open");
+  render();
+};
+$("delBtn").onclick = () => {
+  if (!editingId) return;
+  if (!confirm("이 제품을 삭제할까요?")) return;
+  products = products.filter(x => x.id !== editingId);
+  persist();
+  $("editModal").classList.remove("open");
+  render();
+};
+
+// ═══ 카테고리 자동 분류: 제품명만 보고 카테고리를 정합니다 ═══
+// 위에서부터 순서대로 검사하므로, 더 구체적인 규칙을 앞에 둡니다.
+const CAT_RULES = [
+  ["필기구",        /수정\s*테이프|연필깎이|샤프심|리필심/i],
+  ["다이어리·일기장", /다이어리|일기|저널|산모수첩|diary|journal/i],
+  ["플래너·스케줄러", /플래너|스케줄러|가계부|캘린더|달력|트래커|골트랙커|planner|tracker|calendar/i],
+  ["독서·북커버",    /북커버|책갈피|북마크|독서|리딩|북트래커|book\s*cover|bookmark|book\s*tracker/i],
+  ["바인더·앨범",    /바인더|앨범|콜렉트|티켓북|속지|포토카드|홀더|도감|binder|album/i],
+  ["파우치·가방",    /파우치|가방|백팩|보스턴백|비치백|지갑|필통|케이스|월렛|pouch|bag|wallet|case/i],
+  ["마스킹테이프",   /마스킹|마테|키스컷|롤\s*테이프|페이퍼\s*테이프|masking|washi\s*tape/i],
+  ["스티커",        /스티커|씰|이형지|sticker|seal/i],
+  ["카드·편지",     /카드|편지|엽서|봉투|card|letter|postcard/i],
+  ["필기구",        /볼펜|연필|샤프|지우개|만년필|형광펜|글루\s*펜|잉크|겔펜|크레용|pen\b|pencil|eraser|crayon/i],
+  ["노트·메모",     /노트|메모|수첩|단어장|필사|점착|후센|기록장|note|memo|notebook/i],
+  ["리빙·굿즈",     /키링|머그|네임텍|바스켓|컵|keyring|key\s*ring|mug|basket/i],
+  ["데스크·소품",   /스탬프|클립|문진|테이프\s*디스펜서|stamp|clip/i],
+];
+function autoCategory(name) {
+  for (const [cat, re] of CAT_RULES) if (re.test(name || "")) return cat;
+  return "기타";
+}
+
+// 같은 제품(제품명+쇼핑몰)이 이미 있으면 업데이트, 처음 보는 제품이면 NEW로 추가
+function upsertProduct(o) {
+  const key = ((o.name || "") + "|" + (o.mall || "")).replace(/\s+/g, " ").trim().toLowerCase();
+  const ex = products.find(p =>
+    ((p.name || "") + "|" + (p.mall || "")).replace(/\s+/g, " ").trim().toLowerCase() === key);
+  if (ex) { Object.assign(ex, o); return "up"; }
+  products.push({ id: newId(), addedAt: Date.now(), ...o });
+  return "new";
+}
+$("clearDemoBtn").onclick = () => {
+  if (!confirm("예시 데이터를 모두 지울까요?")) return;
+  products = []; isDemo = false;
+  persist(); render();
+};
+
+// ═══════════════ 쇼핑몰 바로가기 ═══════════════
+const LINK_KEY = "mallDashboard.links.v1";
+let links = [];        // {id, name, url, fav, addedAt, favAt}
+let linkTab = "recent";
+
+// 기본 등록 쇼핑몰 (자사몰 + 스마트스토어) — 처음 열 때 바로가기에 자동 추가됩니다
+const LINK_SEED = [
+  ["리훈", "https://rihoon.co.kr/"],
+  ["리훈 스마트스토어", "https://smartstore.naver.com/rihoon"],
+  ["라이브워크", "https://livework.net/"],
+  ["라이브워크 스마트스토어", "https://smartstore.naver.com/livework"],
+  ["모트모트", "https://motemote.kr/"],
+  ["모트모트 스마트스토어", "https://smartstore.naver.com/motemote"],
+  ["아이코닉", "https://icon-ic.com/"],
+  ["비온뒤", "https://aftertherain0.com/"],
+  ["인디고스토리", "https://indigostory.co.kr/"],
+  ["인디고스토리 브랜드스토어", "https://brand.naver.com/indigostory"],
+  ["세컨드맨션", "https://secondmansion.com/"],
+  ["세컨드맨션 스마트스토어", "https://smartstore.naver.com/secondmansion"],
+  ["바이풀디자인", "https://byfulldesign.co.kr/"],
+  ["바이풀디자인 스마트스토어", "https://smartstore.naver.com/byfulldesign"],
+  ["잼스튜디오", "https://jamshop.co.kr/"],
+  ["잼스튜디오 스마트스토어", "https://smartstore.naver.com/moongushop"],
+  ["아르디움", "https://ardium.co.kr/"],
+  ["아르디움 스마트스토어", "https://smartstore.naver.com/ardium"],
+  ["페이퍼리안", "https://paperian.co.kr/"],
+  ["헤이머지", "https://heymerge.com/"],
+  ["포인트오브뷰", "https://pointofview.kr/"],
+  ["워너디스", "https://wannathis.cafe24.com/"],
+  ["오롤리데이", "https://oh-lolly-day.com/"],
+  ["휘뚜", "https://www.hwittu.com/"],
+];
+function loadLinks() {
+  try { links = JSON.parse(localStorage.getItem(LINK_KEY)) || []; } catch (e) { links = []; }
+  let added = false;
+  LINK_SEED.forEach(([name, url], i) => {
+    if (!links.some(l => l.url === url)) {
+      links.push({ id: "lnkSeed" + i, name, url, fav: false, addedAt: Date.now(), favAt: null });
+      added = true;
+    }
+  });
+  if (added) persistLinks();
+  linkTab = links.some(l => l.fav) ? "fav" : "recent";
+}
+function persistLinks() { localStorage.setItem(LINK_KEY, JSON.stringify(links)); }
+function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } }
+function escHtml(s) { return String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[m])); }
+function timeAgo(t) {
+  if (!t) return "";
+  const d = Date.now() - t;
+  if (d < 60000) return "방금 전";
+  if (d < 3600000) return Math.floor(d / 60000) + "분 전";
+  if (d < 86400000) return Math.floor(d / 3600000) + "시간 전";
+  if (d < 86400000 * 30) return Math.floor(d / 86400000) + "일 전";
+  return new Date(t).toLocaleDateString("ko-KR");
+}
+
+function renderLinks() {
+  const favs = links.filter(l => l.fav);
+  $("favCnt").textContent = favs.length ? favs.length : "";
+  $("recentCnt").textContent = "";
+  $("allCnt").textContent = links.length ? links.length : "";
+  updateHint();
+  document.querySelectorAll(".linkTab").forEach(t =>
+    t.classList.toggle("on", t.dataset.tab === linkTab));
+
+  // 💛 찜: 찜한 순서대로 / 🕒 최근: 최근 추가한 8개만 / 📋 링크 모음: 전체를 가나다순 리스트로
+  const list = linkTab === "fav"
+    ? favs.sort((a, b) => (b.favAt || 0) - (a.favAt || 0))
+    : linkTab === "all"
+    ? links.slice().sort((a, b) => (a.name || "").localeCompare(b.name || "", "ko"))
+    : links.slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0)).slice(0, 8);
+
+  const wrap = $("linkList");
+  wrap.classList.toggle("listMode", linkTab === "all");
+  if (!list.length) {
+    wrap.innerHTML = `<div class="linkEmpty">${linkTab === "fav"
+      ? "아직 찜한 쇼핑몰이 없어요. 주소 옆의 하트(♡)를 누르면 여기에 모여요."
+      : "아직 추가한 주소가 없어요. 위 칸에 자주 보는 쇼핑몰 주소를 붙여넣고 <b>+ 주소 추가</b>를 눌러보세요."}</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(l => `<div class="linkItem" data-id="${l.id}">
+    <img class="favicon" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostOf(l.url))}&sz=32" onerror="this.outerHTML='🛍️'">
+    <a href="${escHtml(l.url)}" target="_blank" rel="noopener" title="${escHtml(l.url)}">${escHtml(l.name)}</a>
+    <span class="host">${escHtml(hostOf(l.url))}</span>
+    <span class="time">${timeAgo(l.addedAt)}</span>
+    <button type="button" class="star${l.fav ? " on" : ""}" title="${l.fav ? "찜 해제" : "찜하기"}">${l.fav ? "♥" : "♡"}</button>
+    <button type="button" class="del" title="삭제">✕</button>
+  </div>`).join("");
+
+  wrap.querySelectorAll(".linkItem").forEach(item => {
+    const id = item.dataset.id;
+    item.querySelector(".star").onclick = () => {
+      const l = links.find(x => x.id === id);
+      l.fav = !l.fav;
+      l.favAt = l.fav ? Date.now() : null;
+      persistLinks(); renderLinks();
+    };
+    item.querySelector(".del").onclick = () => {
+      const l = links.find(x => x.id === id);
+      if (!confirm(`'${l.name}' 주소를 삭제할까요?`)) return;
+      links = links.filter(x => x.id !== id);
+      persistLinks(); renderLinks();
+    };
+  });
+}
+
+document.querySelectorAll(".linkTab").forEach(t => t.onclick = () => { linkTab = t.dataset.tab; renderLinks(); });
+
+$("linkForm").onsubmit = e => {
+  e.preventDefault();
+  let url = $("lnUrl").value.trim();
+  if (!url) { $("lnUrl").focus(); return; }
+  if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+  try { new URL(url); } catch (err) { alert("주소 형식이 올바르지 않아요. 예: https://smartstore.naver.com/내상점"); return; }
+  const dup = links.find(l => l.url === url);
+  if (dup) { alert(`이미 추가된 주소예요 (${dup.name}).`); return; }
+  const name = $("lnName").value.trim() || hostOf(url);
+  links.push({ id: newId(), name, url, fav: false, addedAt: Date.now(), favAt: null });
+  persistLinks();
+  $("lnName").value = ""; $("lnUrl").value = "";
+  linkTab = "recent";      // 방금 넣은 주소가 바로 보이도록
+  renderLinks();
+};
+
+// ═══════════════ 검색 키워드 저장 ═══════════════
+const KW_KEY = "mallDashboard.kw.v1";
+let keywords = [];    // 최근 검색 키워드 (최신순, 최대 12개)
+function loadKw() { try { keywords = JSON.parse(localStorage.getItem(KW_KEY)) || []; } catch (e) { keywords = []; } }
+function persistKw() { localStorage.setItem(KW_KEY, JSON.stringify(keywords)); }
+
+function renderKeywords() {
+  const row = $("kwRow");
+  if (!keywords.length) { row.style.display = "none"; row.innerHTML = ""; return; }
+  row.style.display = "flex";
+  row.innerHTML = '<span class="rowLbl">키워드</span>' + keywords.map(k =>
+    `<button class="chip kw${filter.q === k.toLowerCase() ? " on" : ""}" data-kw="${escHtml(k)}">${escHtml(k)}<span class="x">✕</span></button>`
+  ).join("");
+  row.querySelectorAll("[data-kw]").forEach(b => b.onclick = e => {
+    const kw = b.dataset.kw;
+    if (e.target.classList.contains("x")) {          // ✕ → 키워드 삭제
+      keywords = keywords.filter(x => x !== kw);
+      persistKw();
+      if (filter.q === kw.toLowerCase()) { filter.q = ""; $("searchBox").value = ""; }
+      render();
+      return;
+    }
+    const off = filter.q === kw.toLowerCase();       // 켜져 있으면 다시 눌러 해제
+    filter.q = off ? "" : kw.toLowerCase();
+    $("searchBox").value = off ? "" : kw;
+    render();
+  });
+}
+// 검색창에서 Enter → 키워드로 저장 (클릭해서 재사용)
+$("searchBox").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const q = e.target.value.trim();
+  if (!q) return;
+  keywords = [q, ...keywords.filter(x => x !== q)].slice(0, 12);
+  persistKw();
+  render();
+});
+
+// ═══════════════ 필터/정렬 이벤트 ═══════════════
+$("searchBox").oninput = e => { filter.q = e.target.value.trim().toLowerCase(); render(); };
+$("groupToggle").onchange = e => { grouped = e.target.checked; render(); };
+$("sortSel").onchange = e => { sortKey = e.target.value; render(); };
+$("hideSoldout").onchange = e => { filter.hideSoldout = e.target.checked; render(); };
+$("compareToggle").onchange = e => { compareMode = e.target.checked; syncViewBtns(); render(); };
+$("viewGridBtn").onclick = () => { view = "grid"; compareMode = false; $("compareToggle").checked = false; syncViewBtns(); render(); };
+$("viewTableBtn").onclick = () => { view = "table"; compareMode = false; $("compareToggle").checked = false; syncViewBtns(); render(); };
+function syncViewBtns() {
+  $("viewGridBtn").classList.toggle("on", view === "grid" && !compareMode);
+  $("viewTableBtn").classList.toggle("on", view === "table" && !compareMode);
+}
+
+// 모달 바깥 클릭으로 닫기
+document.querySelectorAll(".modalBg").forEach(m => m.addEventListener("click", e => {
+  if (e.target === m) m.classList.remove("open");
+}));
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape") document.querySelectorAll(".modalBg").forEach(m => m.classList.remove("open"));
+});
+
+// ═══════════════ 시작 ═══════════════
+load();
+loadLinks();
+loadKw();
+syncViewBtns();
+render();
+renderLinks();
+</script>
+</body>
+</html>
