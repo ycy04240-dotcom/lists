@@ -410,7 +410,7 @@ const MALL_COLORS = ["#2b5f8a", "#c0392b", "#2e7d4f", "#8a5fb0", "#b8860b", "#4a
 
 // ═══ 실제 수집 데이터 (2026-07-07, 각 브랜드 자사몰에서 수집) ═══
 // SEED_VERSION을 올리고 SEED를 갱신하면, 기존 사용자에게는 새 제품만 NEW로 추가됩니다.
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 const P = (mall, cat, name, price, sale, reviews, url, img, soldout) => ({
   name, mall, category: cat, price, sale: sale || null, sales: 0, reviews: reviews || 0,
   rating: null, date: "", url: url || "", img: img || "", soldout: !!soldout,
@@ -726,6 +726,12 @@ P("아르디움","파우치·가방","트래블 멀티 파우치 (50% 할인)",9
 P("아르디움","스티커","[주문제작] 아르디움 네임스티커 방수 이름표",10000,7000,0,"https://ardium.co.kr/product/주문제작-3-4일-소요-아르디움-네임스티커-방수-이름표-어린이집-준비물-1장-단품-이름-개수-28-72개/3297/","https://ardium.co.kr/web/product/medium/202502/acc35b9ca02b0877e9ec0891718db293.jpg"),
 P("아르디움","스티커","아르디움 멀티 롤스티커 (1.5m)",18900,null,0,"https://ardium.co.kr/product/아르디움-멀티-롤스티커15m-유리컵-전사지-방수-캐리어-스티커/3301/","https://ardium.co.kr/web/product/medium/202503/ba6afde57015d921923eb66354a77579.jpg"),
 P("아르디움","스티커","아르디움 아티스트 멀티 스티커",4000,null,0,"https://ardium.co.kr/product/아르디움-아티스트-멀티-스티커/3285/","https://ardium.co.kr/web/product/medium/202501/ac0ced89f73c85a61bce27139e7bc83b.jpg"),
+// ── 모트모트 (motemote.kr) ──
+P("모트모트","플래너·스케줄러","텐미닛 플래너 100D",6400,null,0,"https://motemote.kr/product/116299997","https://motemote.kr/_next/image?url=https%3A%2F%2Fshopby-images.cdn-nhncommerce.com%2FMall-No-Q7Gb%2FPARTNER%2F20250608%2FPARTNER_118469%2F202506081717362d1a6341a3db405c91afb8c1c822909a%2F9lydlOvO1fn6Ircbiy4m-A.jpg&w=1920&q=75"),
+P("모트모트","노트·메모","스프링북 세로 (오답노트 외 5종)",3900,null,0,"https://motemote.kr/product/116340559","https://motemote.kr/_next/image?url=https%3A%2F%2Fshopby-images.cdn-nhncommerce.com%2FMall-No-Q7Gb%2FPARTNER%2F20250609%2FPARTNER_118469%2F20250609194111bcbece36756d4c938dbfe8f5340aea9e%2FyomQqSNX6u7Fe5ULpKvQpA.jpg&w=1920&q=75"),
+P("모트모트","플래너·스케줄러","텐미닛 플래너 31D",2400,null,0,"https://motemote.kr/product/116241313","https://motemote.kr/_next/image?url=https%3A%2F%2Fshopby-images.cdn-nhncommerce.com%2FMall-No-Q7Gb%2FPARTNER%2F20250608%2FPARTNER_118469%2F20250608171822464b4e3368d240c58e7d7c8e828ad550%2FWiyn0znzxxsVfDn4p8U7gw.jpg&w=1920&q=75"),
+P("모트모트","플래너·스케줄러","플래너 커버 (풀커버형/플립형)",1900,null,0,"https://motemote.kr/product/122337921","https://motemote.kr/_next/image?url=https%3A%2F%2Fshopby-images.cdn-nhncommerce.com%2FMall-No-Q7Gb%2FPARTNER%2F20250608%2FPARTNER_118469%2F202506081752196a05b96e16064615855d4b496ac55e80%2FbJLEPeJRrKj6kHNuV_6Gjg.jpg&w=1920&q=75"),
+P("모트모트","기타","마스랩 번쩍포커스젤 3BOX 30포",18472,null,0,"https://motemote.kr/product/130851690","https://motemote.kr/_next/image?url=https%3A%2F%2Fshopby-images.cdn-nhncommerce.com%2FMall-No-Q7Gb%2FPARTNER%2F20250624%2FPARTNER_118469%2F202506241954401c122ed3b2e142b39eead5f3cd211a25%2F1csPTpWWUaKBos6bXfWloQ.jpg&w=1920&q=75"),
 ];
 
 let products = [];
@@ -1228,7 +1234,7 @@ const FOLD_KEY = "mallDashboard.linkFold.v1";
 let linkFolded = localStorage.getItem(FOLD_KEY) !== "0";
 function applyFold() {
   document.querySelector(".linkPanel").classList.toggle("folded", linkFolded);
-  $("linkFoldBtn").textContent = linkFolded ? `▸ 쇼핑몰 링크 ${links.length}개 펼치기` : "▾ 접기";
+  $("linkFoldBtn").textContent = linkFolded ? "▸ 쇼핑몰 링크 펼치기" : "▾ 접기";
 }
 $("linkFoldBtn").onclick = () => {
   linkFolded = !linkFolded;
