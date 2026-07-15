@@ -117,6 +117,11 @@
   .linkItem button.star:hover { color: #e0245e; }
   .linkItem button.del:hover { color: var(--red); }
   .linkEmpty { font-size: 12px; color: var(--sub); margin-top: 10px; line-height: 1.6; }
+  /* 접힌 상태: 접기 버튼만 남기고 모두 숨김 */
+  .linkPanel.folded .linkTabs, .linkPanel.folded .linkAddForm, .linkPanel.folded .linkList { display: none; }
+  #linkFoldBtn { font-weight: 700; }
+  .linkItem button.del { font-size: 10px; opacity: .5; }
+  .linkItem button.del:hover { opacity: 1; }
   /* 📋 링크 모음: 세로 리스트 형태 */
   .linkList.listMode { flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
   .linkList.listMode .linkItem { width: 100%; }
@@ -315,10 +320,10 @@
 <div id="linkSec">
   <div class="linkPanel">
     <div class="linkHead">
+      <button type="button" class="linkTab" id="linkFoldBtn">▸ 펼치기</button>
       <div class="linkTabs">
         <button class="linkTab" data-tab="fav">💛 찜한 쇼핑몰<span class="cnt" id="favCnt"></span></button>
-        <button class="linkTab" data-tab="recent">🕒 최근 추가<span class="cnt" id="recentCnt"></span></button>
-        <button class="linkTab" data-tab="all">📋 링크 모음<span class="cnt" id="allCnt"></span></button>
+        <button class="linkTab" data-tab="recent">📋 링크 모음<span class="cnt" id="recentCnt"></span></button>
       </div>
       <form class="linkAddForm" id="linkForm">
         <input id="lnName" placeholder="이름 (예: 스마트스토어)">
@@ -1174,21 +1179,18 @@ function timeAgo(t) {
 function renderLinks() {
   const favs = links.filter(l => l.fav);
   $("favCnt").textContent = favs.length ? favs.length : "";
-  $("recentCnt").textContent = "";
-  $("allCnt").textContent = links.length ? links.length : "";
+  $("recentCnt").textContent = links.length ? links.length : "";
   updateHint();
-  document.querySelectorAll(".linkTab").forEach(t =>
+  document.querySelectorAll(".linkTab[data-tab]").forEach(t =>
     t.classList.toggle("on", t.dataset.tab === linkTab));
+  applyFold();
 
-  // 💛 찜: 찜한 순서대로 / 🕒 최근: 최근 추가한 8개만 / 📋 링크 모음: 전체를 가나다순 리스트로
+  // 💛 찜: 찜한 순서대로 / 📋 링크 모음: 전체를 최근 추가한 순서로
   const list = linkTab === "fav"
     ? favs.sort((a, b) => (b.favAt || 0) - (a.favAt || 0))
-    : linkTab === "all"
-    ? links.slice().sort((a, b) => (a.name || "").localeCompare(b.name || "", "ko"))
-    : links.slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0)).slice(0, 8);
+    : links.slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
 
   const wrap = $("linkList");
-  wrap.classList.toggle("listMode", linkTab === "all");
   if (!list.length) {
     wrap.innerHTML = `<div class="linkEmpty">${linkTab === "fav"
       ? "아직 찜한 쇼핑몰이 없어요. 주소 옆의 하트(♡)를 누르면 여기에 모여요."
@@ -1219,7 +1221,20 @@ function renderLinks() {
   });
 }
 
-document.querySelectorAll(".linkTab").forEach(t => t.onclick = () => { linkTab = t.dataset.tab; renderLinks(); });
+document.querySelectorAll(".linkTab[data-tab]").forEach(t => t.onclick = () => { linkTab = t.dataset.tab; renderLinks(); });
+
+// ═══ 링크 패널 접기/펼치기 (기본: 접힘) ═══
+const FOLD_KEY = "mallDashboard.linkFold.v1";
+let linkFolded = localStorage.getItem(FOLD_KEY) !== "0";
+function applyFold() {
+  document.querySelector(".linkPanel").classList.toggle("folded", linkFolded);
+  $("linkFoldBtn").textContent = linkFolded ? `▸ 쇼핑몰 링크 ${links.length}개 펼치기` : "▾ 접기";
+}
+$("linkFoldBtn").onclick = () => {
+  linkFolded = !linkFolded;
+  localStorage.setItem(FOLD_KEY, linkFolded ? "1" : "0");
+  applyFold();
+};
 
 $("linkForm").onsubmit = e => {
   e.preventDefault();
@@ -1243,24 +1258,40 @@ $("linkForm").onsubmit = e => {
 // 프록시를 거쳐 쇼핑몰 첫 화면을 읽고, 상품 링크·이름·가격·이미지를 추출합니다.
 // (봇을 막거나 스크립트로만 그려지는 사이트는 수집이 안 될 수 있어요)
 async function fetchMallProducts(link) {
+  let added = 0;
+
+  // 1차: HTML 프록시로 페이지를 받아 DOM에서 추출
   const proxies = [
     u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u),
     u => "https://corsproxy.io/?url=" + encodeURIComponent(u),
+    u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u),
   ];
-  let html = null;
   for (const p of proxies) {
     try {
-      const res = await fetch(p(link.url), { signal: AbortSignal.timeout(15000) });
-      if (res.ok) {
-        const t = await res.text();
-        if (t && t.length > 500) { html = t; break; }
-      }
+      const res = await fetch(p(link.url), { signal: AbortSignal.timeout(12000) });
+      if (!res.ok) continue;
+      const t = await res.text();
+      if (!t || t.length < 500) continue;
+      added = parseHtmlProducts(t, link);
+      if (added) break;
     } catch (err) {}
   }
-  if (!html) return { ok: false, count: 0 };
 
+  // 2차: Jina 리더(웹페이지→텍스트 변환 중계)로 재시도 — 성공률이 가장 높음
+  if (!added) {
+    try {
+      const res = await fetch("https://r.jina.ai/" + link.url, { signal: AbortSignal.timeout(25000) });
+      if (res.ok) added = parseMarkdownProducts(await res.text(), link);
+    } catch (err) {}
+  }
+
+  if (added) { isDemo = false; persist(); render(); }
+  return { ok: true, count: added };
+}
+
+function parseHtmlProducts(html, link) {
+  let base; try { base = new URL(link.url); } catch (err) { return 0; }
   const doc = new DOMParser().parseFromString(html, "text/html");
-  const base = new URL(link.url);
   const seen = new Set();
   let added = 0;
   const anchors = doc.querySelectorAll(
@@ -1296,8 +1327,39 @@ async function fetchMallProducts(link) {
     });
     if (r === "new") added++;
   }
-  if (added) { isDemo = false; persist(); render(); }
-  return { ok: true, count: added };
+  return added;
+}
+
+// Jina 리더가 돌려주는 텍스트에서 [제품명](상품링크) 패턴을 추출
+function parseMarkdownProducts(md, link) {
+  // 상품링크에 붙은 이미지 짝: [![..](이미지주소)](상품링크)
+  const imgMap = {};
+  const imre = /\[!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)\]\((https?:\/\/[^\s)]+)\)/g;
+  let im;
+  while ((im = imre.exec(md))) imgMap[im[2]] = im[1];
+
+  const isProductUrl = u => /\/product\/|product_no=|\/products\/|\/goods\/|detail\.(php|html)/.test(u);
+  const seen = new Set();
+  let added = 0, m;
+  const re = /\[([^\]\n]{2,80})\]\((https?:\/\/[^\s)]+)\)/g;
+  while ((m = re.exec(md)) && added < 20) {
+    const name = m[1].replace(/\s+/g, " ").trim();
+    const url = m[2];
+    if (!isProductUrl(url) || seen.has(url)) continue;
+    if (!name || name.startsWith("!") || /^https?:/.test(name)) continue;
+    if (/^Image ?\d*$|더보기|리뷰|장바구니|바로가기|상세보기|찜하기/.test(name)) continue;
+    const tail = md.slice(m.index, m.index + 300);
+    const pm = tail.match(/([\d,]{2,10})\s*원/);
+    const price = pm ? (+pm[1].replace(/,/g, "") || 0) : 0;
+    seen.add(url);
+    const r = upsertProduct({
+      name, mall: link.name, category: autoCategory(name),
+      price, sale: null, sales: 0, reviews: 0, rating: null,
+      date: "", url, img: imgMap[url] || "", soldout: false,
+    });
+    if (r === "new") added++;
+  }
+  return added;
 }
 async function collectFromLink(lk) {
   const r = await fetchMallProducts(lk);
