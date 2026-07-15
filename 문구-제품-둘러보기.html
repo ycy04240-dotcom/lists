@@ -159,6 +159,8 @@
     position: relative; display: flex; flex-direction: column;
   }
   .card:hover { transform: translateY(-3px); }
+  /* 이미지만 보기 모드: 제품명·가격 등 정보 영역 숨김 */
+  body.hideInfo .card .body { display: none; }
   .card .imgBox {
     aspect-ratio: 1; background: #fffdf4; display: flex; align-items: center;
     justify-content: center; position: relative; overflow: hidden;
@@ -302,6 +304,7 @@
   <input id="searchBox" type="search" placeholder="🔍 제품명 검색">
   <button class="btn" id="viewGridBtn">카드</button>
   <button class="btn" id="viewTableBtn">목록</button>
+  <button class="btn" id="infoToggleBtn" title="제품명·가격 표시를 켜고 끕니다">🖼️ 이미지만</button>
 </header>
 
 <div id="demoBanner">
@@ -312,7 +315,6 @@
 <div id="linkSec">
   <div class="linkPanel">
     <div class="linkHead">
-      <h2>🔗 내 쇼핑몰 바로가기</h2>
       <div class="linkTabs">
         <button class="linkTab" data-tab="fav">💛 찜한 쇼핑몰<span class="cnt" id="favCnt"></span></button>
         <button class="linkTab" data-tab="recent">🕒 최근 추가<span class="cnt" id="recentCnt"></span></button>
@@ -336,13 +338,14 @@
 
 <div id="sortRow">
   <select id="sortSel">
+    <option value="rand">🎲 랜덤순</option>
+    <option value="new">🆕 최신순</option>
     <option value="pop">🔥 인기순 (판매량)</option>
     <option value="review">💬 리뷰 많은순</option>
     <option value="rating">⭐ 평점 높은순</option>
     <option value="priceAsc">💰 낮은 가격순</option>
     <option value="priceDesc">💎 높은 가격순</option>
     <option value="sale">🏷️ 할인율 높은순</option>
-    <option value="new">🆕 최신 등록순</option>
     <option value="name">가나다순</option>
   </select>
   <label class="toggleLbl"><input type="checkbox" id="hideSoldout">품절 제외</label>
@@ -755,7 +758,14 @@ function newId() { return "p" + Date.now() + Math.random().toString(36).slice(2,
 
 // ═══════════════ 필터 상태 ═══════════════
 let filter = { mall: "전체", cat: "전체", q: "", hideSoldout: false };
-let sortKey = "pop";
+let sortKey = "rand";    // 기본: 랜덤순
+
+// 랜덤순: 세션 동안 순서 유지, 랜덤순을 다시 선택하면 새로 섞임
+let randSeed = {};
+const randOf = p => {
+  if (!(p.id in randSeed)) randSeed[p.id] = Math.random();
+  return randSeed[p.id];
+};
 let view = "grid";       // grid | table
 let compareMode = false;
 let grouped = false;     // 카테고리별 묶어보기
@@ -781,6 +791,7 @@ function filtered() {
     (!filter.q || (p.name || "").toLowerCase().includes(filter.q))
   );
   const cmp = {
+    rand:      (a, b) => randOf(a) - randOf(b),
     // 판매량 정보가 없는 몰은 리뷰 수를 인기 지표로 사용
     pop:       (a, b) => (b.sales || 0) - (a.sales || 0) || (b.reviews || 0) - (a.reviews || 0),
     review:    (a, b) => (b.reviews || 0) - (a.reviews || 0),
@@ -788,7 +799,8 @@ function filtered() {
     priceAsc:  (a, b) => priceOf(a) - priceOf(b),
     priceDesc: (a, b) => priceOf(b) - priceOf(a),
     sale:      (a, b) => pctOf(b) - pctOf(a),
-    new:       (a, b) => (b.date || "").localeCompare(a.date || ""),
+    // 최신순: 대시보드에 들어온 시점(addedAt) 우선, 그다음 등록일
+    new:       (a, b) => (b.addedAt || 0) - (a.addedAt || 0) || (b.date || "").localeCompare(a.date || ""),
     name:      (a, b) => (a.name || "").localeCompare(b.name || "", "ko"),
   };
   return list.sort(cmp[sortKey] || cmp.pop);
@@ -919,7 +931,16 @@ function renderGrid(list) {
   } else {
     grid.innerHTML = list.map((p, i) => cardHtml(p, i)).join("");
   }
-  grid.querySelectorAll(".card").forEach(c => c.onclick = () => openEdit(c.dataset.id));
+  grid.querySelectorAll(".card").forEach(c => {
+    const p = products.find(x => x.id === c.dataset.id);
+    const imgBox = c.querySelector(".imgBox");
+    if (imgBox) imgBox.onclick = e => {       // 이미지 클릭 → 상품 페이지 바로 이동
+      e.stopPropagation();
+      if (p && p.url) window.open(p.url, "_blank", "noopener");
+      else openEdit(c.dataset.id);
+    };
+    c.onclick = () => openEdit(c.dataset.id); // 정보 영역 클릭 → 수정 팝업
+  });
   bindMallTags(grid);
 }
 // 쇼핑몰 이름 클릭 → 그 몰 제품만 필터
@@ -1177,8 +1198,6 @@ function renderLinks() {
   wrap.innerHTML = list.map(l => `<div class="linkItem" data-id="${l.id}">
     <img class="favicon" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostOf(l.url))}&sz=32" onerror="this.outerHTML='🛍️'">
     <a href="${escHtml(l.url)}" target="_blank" rel="noopener" title="${escHtml(l.url)}">${escHtml(l.name)}</a>
-    <span class="host">${escHtml(hostOf(l.url))}</span>
-    <span class="time">${timeAgo(l.addedAt)}</span>
     <button type="button" class="star${l.fav ? " on" : ""}" title="${l.fav ? "찜 해제" : "찜하기"}">${l.fav ? "♥" : "♡"}</button>
     <button type="button" class="del" title="삭제">✕</button>
   </div>`).join("");
@@ -1211,12 +1230,84 @@ $("linkForm").onsubmit = e => {
   const dup = links.find(l => l.url === url);
   if (dup) { alert(`이미 추가된 주소예요 (${dup.name}).`); return; }
   const name = $("lnName").value.trim() || hostOf(url);
-  links.push({ id: newId(), name, url, fav: false, addedAt: Date.now(), favAt: null });
+  const lk = { id: newId(), name, url, fav: false, addedAt: Date.now(), favAt: null };
+  links.push(lk);
   persistLinks();
   $("lnName").value = ""; $("lnUrl").value = "";
   linkTab = "recent";      // 방금 넣은 주소가 바로 보이도록
   renderLinks();
+  collectFromLink(lk);     // 그 쇼핑몰 제품 자동 수집 → 카드/목록에 NEW로 표시
 };
+
+// ═══ 주소 추가 시 제품 자동 수집 ═══
+// 프록시를 거쳐 쇼핑몰 첫 화면을 읽고, 상품 링크·이름·가격·이미지를 추출합니다.
+// (봇을 막거나 스크립트로만 그려지는 사이트는 수집이 안 될 수 있어요)
+async function fetchMallProducts(link) {
+  const proxies = [
+    u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u),
+    u => "https://corsproxy.io/?url=" + encodeURIComponent(u),
+  ];
+  let html = null;
+  for (const p of proxies) {
+    try {
+      const res = await fetch(p(link.url), { signal: AbortSignal.timeout(15000) });
+      if (res.ok) {
+        const t = await res.text();
+        if (t && t.length > 500) { html = t; break; }
+      }
+    } catch (err) {}
+  }
+  if (!html) return { ok: false, count: 0 };
+
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const base = new URL(link.url);
+  const seen = new Set();
+  let added = 0;
+  const anchors = doc.querySelectorAll(
+    'a[href*="/product/"], a[href*="product_no="], a[href*="/products/"], a[href*="/goods/"], a[href*="detail.php"], a[href*="detail.html"]');
+  for (const a of anchors) {
+    if (added >= 20) break;
+    const href = a.getAttribute("href") || "";
+    if (!href || href.startsWith("#") || href.toLowerCase().startsWith("javascript")) continue;
+    let abs; try { abs = new URL(href, base).href; } catch (err) { continue; }
+    if (seen.has(abs)) continue;
+
+    const img = a.querySelector("img");
+    let name = ((img && img.getAttribute("alt")) || "").trim();
+    if (!name) name = (a.textContent || "").replace(/\s+/g, " ").trim();
+    if (!name || name.length < 2 || name.length > 80) continue;
+    if (/상세보기|더보기|바로가기|리뷰|장바구니|찜하기|버튼|로그인/.test(name)) continue;
+
+    const scope = a.closest("li, .item, .prd, .product, article, div") || a;
+    const m = (scope.textContent || "").match(/([\d,]{2,10})\s*원/);
+    const price = m ? (+m[1].replace(/,/g, "") || 0) : 0;
+
+    let imgUrl = "";
+    if (img) {
+      const src = img.getAttribute("src") || img.getAttribute("data-src") || "";
+      if (src && !src.startsWith("data:")) { try { imgUrl = new URL(src, base).href; } catch (err) {} }
+    }
+
+    seen.add(abs);
+    const r = upsertProduct({
+      name, mall: link.name, category: autoCategory(name),
+      price, sale: null, sales: 0, reviews: 0, rating: null,
+      date: "", url: abs, img: imgUrl, soldout: false,
+    });
+    if (r === "new") added++;
+  }
+  if (added) { isDemo = false; persist(); render(); }
+  return { ok: true, count: added };
+}
+async function collectFromLink(lk) {
+  const r = await fetchMallProducts(lk);
+  if (r.count) {
+    sortKey = "new"; $("sortSel").value = "new"; render();
+    alert(`'${lk.name}'에서 제품 ${r.count}개를 가져왔어요!\n🆕 NEW 표시와 함께 최신순 맨 앞에 보여요.`);
+  } else {
+    alert(`'${lk.name}' 주소는 저장됐지만, 이 사이트는 자동 수집이 막혀 있어요.\n(봇 차단 또는 스크립트 렌더링 방식)\nClaude에게 "이 쇼핑몰 제품 수집해줘"라고 요청하면 채워드릴 수 있어요.`);
+  }
+}
 
 // ═══════════════ 검색 키워드 저장 ═══════════════
 const KW_KEY = "mallDashboard.kw.v1";
@@ -1259,9 +1350,28 @@ $("searchBox").addEventListener("keydown", e => {
 // ═══════════════ 필터/정렬 이벤트 ═══════════════
 $("searchBox").oninput = e => { filter.q = e.target.value.trim().toLowerCase(); render(); };
 $("groupToggle").onchange = e => { grouped = e.target.checked; render(); };
-$("sortSel").onchange = e => { sortKey = e.target.value; render(); };
+$("sortSel").onchange = e => {
+  sortKey = e.target.value;
+  if (sortKey === "rand") randSeed = {};   // 랜덤순 다시 선택 → 새로 섞기
+  render();
+};
 $("hideSoldout").onchange = e => { filter.hideSoldout = e.target.checked; render(); };
 $("compareToggle").onchange = e => { compareMode = e.target.checked; syncViewBtns(); render(); };
+// 이미지만 ↔ 이름·가격 보기 토글 (처음엔 이미지만 보이게 시작)
+let showInfo = false;
+document.body.classList.add("hideInfo");
+$("infoToggleBtn").textContent = "📝 이름·가격 보기";
+$("infoToggleBtn").classList.add("on");
+$("infoToggleBtn").onclick = () => {
+  showInfo = !showInfo;
+  document.body.classList.toggle("hideInfo", !showInfo);
+  $("infoToggleBtn").textContent = showInfo ? "🖼️ 이미지만" : "📝 이름·가격 보기";
+  $("infoToggleBtn").classList.toggle("on", !showInfo);
+  if (!showInfo && (view !== "grid" || compareMode)) {   // 이미지 모드는 카드 보기에서
+    view = "grid"; compareMode = false; $("compareToggle").checked = false;
+    syncViewBtns(); render();
+  }
+};
 $("viewGridBtn").onclick = () => { view = "grid"; compareMode = false; $("compareToggle").checked = false; syncViewBtns(); render(); };
 $("viewTableBtn").onclick = () => { view = "table"; compareMode = false; $("compareToggle").checked = false; syncViewBtns(); render(); };
 function syncViewBtns() {
