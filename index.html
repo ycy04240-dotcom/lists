@@ -120,6 +120,9 @@
   /* 접힌 상태: 접기 버튼만 남기고 모두 숨김 */
   .linkPanel.folded .linkTabs, .linkPanel.folded .linkAddForm, .linkPanel.folded .linkList { display: none; }
   #linkFoldBtn { font-weight: 700; }
+  /* 필터(쇼핑몰·카테고리·키워드) 접기 */
+  #filterBar.folded #mallChips, #filterBar.folded #catChips, #filterBar.folded #kwRow { display: none; }
+  #filterFoldBtn { font-weight: 700; }
   .linkItem button.del { font-size: 10px; opacity: .5; }
   .linkItem button.del:hover { opacity: 1; }
   /* 📋 링크 모음: 세로 리스트 형태 */
@@ -336,6 +339,7 @@
 </div>
 
 <div id="filterBar">
+  <div id="filterFoldRow"><button type="button" class="linkTab" id="filterFoldBtn">▾ 필터 접기</button></div>
   <div class="chipRow" id="mallChips"><span class="rowLbl">쇼핑몰</span></div>
   <div class="chipRow" id="catChips"><span class="rowLbl">카테고리</span></div>
   <div class="chipRow" id="kwRow" style="display:none;"></div>
@@ -818,14 +822,13 @@ function filtered() {
 }
 
 // ═══════════════ 렌더 ═══════════════
+// "○○ 스마트스토어"처럼 같은 브랜드의 다른 채널 이름을 하나로 정규화
+const brandOf = n => (n || "").replace(/\s*(스마트스토어|브랜드스토어|공식몰|공식스토어|스토어)$/, "").trim();
+
 // 헤더 문구: 제품이 있는 몰 + 바로가기에 등록한 브랜드를 합쳐서 자동 집계
-// ("○○ 스마트스토어"처럼 같은 브랜드의 다른 채널은 하나로 칩니다)
 function updateHint() {
   const set = new Set(products.map(p => p.mall));
-  links.forEach(l => {
-    const name = (l.name || "").replace(/\s*(스마트스토어|브랜드스토어|공식몰|공식스토어|스토어)$/, "").trim();
-    if (name) set.add(name);
-  });
+  links.forEach(l => { const name = brandOf(l.name); if (name) set.add(name); });
   const el = document.getElementById("mallHint");
   if (el) el.textContent = `문구 브랜드 ${set.size}곳 상품 모아보기`;
 }
@@ -862,7 +865,9 @@ function chipHtml(items, cur, key) {
   ).join("");
 }
 function renderChips() {
-  const malls = [...new Set(products.map(p => p.mall))].sort();
+  // 제품이 있는 몰 + 링크로 등록한 브랜드를 합쳐서 칩 생성 (제품이 아직 없어도 표시)
+  const linkBrands = links.map(l => brandOf(l.name)).filter(Boolean);
+  const malls = [...new Set([...products.map(p => p.mall), ...linkBrands])].sort();
   const cats = [...new Set(products.map(p => p.category))].sort();
   if (filter.mall !== "전체" && !malls.includes(filter.mall)) filter.mall = "전체";
   if (filter.cat !== "전체" && filter.cat !== "__new__" && !cats.includes(filter.cat)) filter.cat = "전체";
@@ -1241,6 +1246,20 @@ $("linkFoldBtn").onclick = () => {
   localStorage.setItem(FOLD_KEY, linkFolded ? "1" : "0");
   applyFold();
 };
+
+// ═══ 필터(쇼핑몰·카테고리) 접기/펼치기 (기본: 펼침) ═══
+const FILTER_FOLD_KEY = "mallDashboard.filterFold.v1";
+let filterFolded = localStorage.getItem(FILTER_FOLD_KEY) === "1";
+function applyFilterFold() {
+  document.getElementById("filterBar").classList.toggle("folded", filterFolded);
+  $("filterFoldBtn").textContent = filterFolded ? "▸ 쇼핑몰·카테고리 필터 펼치기" : "▾ 필터 접기";
+}
+$("filterFoldBtn").onclick = () => {
+  filterFolded = !filterFolded;
+  localStorage.setItem(FILTER_FOLD_KEY, filterFolded ? "1" : "0");
+  applyFilterFold();
+};
+applyFilterFold();
 
 $("linkForm").onsubmit = e => {
   e.preventDefault();
