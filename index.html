@@ -327,6 +327,7 @@
       <div class="linkTabs">
         <button class="linkTab" data-tab="fav">💛 찜한 쇼핑몰<span class="cnt" id="favCnt"></span></button>
         <button class="linkTab" data-tab="recent">📋 링크 모음<span class="cnt" id="recentCnt"></span></button>
+        <button class="linkTab" data-tab="nocollect">🚫 수집불가<span class="cnt" id="noColCnt"></span></button>
       </div>
       <form class="linkAddForm" id="linkForm">
         <input id="lnName" placeholder="이름 (예: 스마트스토어)">
@@ -414,7 +415,7 @@ const MALL_COLORS = ["#2b5f8a", "#c0392b", "#2e7d4f", "#8a5fb0", "#b8860b", "#4a
 
 // ═══ 실제 수집 데이터 (2026-07-07, 각 브랜드 자사몰에서 수집) ═══
 // SEED_VERSION을 올리고 SEED를 갱신하면, 기존 사용자에게는 새 제품만 NEW로 추가됩니다.
-const SEED_VERSION = 4;
+const SEED_VERSION = 5;
 const P = (mall, cat, name, price, sale, reviews, url, img, soldout) => ({
   name, mall, category: cat, price, sale: sale || null, sales: 0, reviews: reviews || 0,
   rating: null, date: "", url: url || "", img: img || "", soldout: !!soldout,
@@ -736,6 +737,51 @@ P("모트모트","노트·메모","스프링북 세로 (오답노트 외 5종)",
 P("모트모트","플래너·스케줄러","텐미닛 플래너 31D",2400,null,0,"https://motemote.kr/product/116241313","https://motemote.kr/_next/image?url=https%3A%2F%2Fshopby-images.cdn-nhncommerce.com%2FMall-No-Q7Gb%2FPARTNER%2F20250608%2FPARTNER_118469%2F20250608171822464b4e3368d240c58e7d7c8e828ad550%2FWiyn0znzxxsVfDn4p8U7gw.jpg&w=1920&q=75"),
 P("모트모트","플래너·스케줄러","플래너 커버 (풀커버형/플립형)",1900,null,0,"https://motemote.kr/product/122337921","https://motemote.kr/_next/image?url=https%3A%2F%2Fshopby-images.cdn-nhncommerce.com%2FMall-No-Q7Gb%2FPARTNER%2F20250608%2FPARTNER_118469%2F202506081752196a05b96e16064615855d4b496ac55e80%2FbJLEPeJRrKj6kHNuV_6Gjg.jpg&w=1920&q=75"),
 P("모트모트","기타","마스랩 번쩍포커스젤 3BOX 30포",18472,null,0,"https://motemote.kr/product/130851690","https://motemote.kr/_next/image?url=https%3A%2F%2Fshopby-images.cdn-nhncommerce.com%2FMall-No-Q7Gb%2FPARTNER%2F20250624%2FPARTNER_118469%2F202506241954401c122ed3b2e142b39eead5f3cd211a25%2F1csPTpWWUaKBos6bXfWloQ.jpg&w=1920&q=75"),
+// ── 롤드페인트 (rolledpaint.com) ──
+P("롤드페인트","마스킹테이프","Gingham Sky",10500,null,0,"https://rolledpaint.com/product/RPDW05","https://contents.sixshop.com/uploadedFiles/125049/product/image_1774520461164.jpg"),
+P("롤드페인트","마스킹테이프","Gingham Garden",10500,null,0,"https://rolledpaint.com/product/RPDW06","https://contents.sixshop.com/uploadedFiles/125049/product/image_1774520434992.jpg"),
+P("롤드페인트","마스킹테이프","River Grass",8500,null,0,"https://rolledpaint.com/product/RPMT39","https://contents.sixshop.com/uploadedFiles/125049/product/image_1774520382789.jpg"),
+P("롤드페인트","마스킹테이프","Forest Island",8500,null,0,"https://rolledpaint.com/product/RPMT40","https://contents.sixshop.com/uploadedFiles/125049/product/image_1774520351515.jpg"),
+P("롤드페인트","마스킹테이프","Books",6500,null,0,"https://rolledpaint.com/product/RPMT41","https://contents.sixshop.com/uploadedFiles/125049/product/image_1774520532674.jpg"),
+P("롤드페인트","마스킹테이프","x YURI HIMURO (콜라보 마스킹테이프)",4500,null,0,"https://rolledpaint.com/product/YURI","https://contents.sixshop.com/uploadedFiles/125049/product/image_1776483806832.jpg"),
+P("롤드페인트","마스킹테이프","Seasons",8500,null,0,"https://rolledpaint.com/product/RPMT38","https://contents.sixshop.com/uploadedFiles/125049/product/image_1762513912390.jpg"),
+P("롤드페인트","마스킹테이프","Who is who",8500,null,0,"https://rolledpaint.com/product/RPDW04","https://contents.sixshop.com/uploadedFiles/125049/product/image_1762486092900.jpg"),
+P("롤드페인트","마스킹테이프","Underline 21P Set",24000,null,0,"https://rolledpaint.com/product/RPSET02","https://contents.sixshop.com/uploadedFiles/125049/product/image_1749970470918.jpg"),
+P("롤드페인트","마스킹테이프","Natural Series NEW Color 6P Set",24000,null,0,"https://rolledpaint.com/product/RPSET01","https://contents.sixshop.com/uploadedFiles/125049/product/image_1750577921848.jpg"),
+P("롤드페인트","마스킹테이프","Journey",5500,null,0,"https://rolledpaint.com/product/RPMT36","https://contents.sixshop.com/uploadedFiles/125049/product/image_1745141191537.jpg"),
+P("롤드페인트","데스크·소품","DECOP 크래프트 펀치",12000,null,0,"https://rolledpaint.com/product/decop","https://contents.sixshop.com/uploadedFiles/125049/product/image_1751958236071.jpg"),
+// ── mmmg (store.mmmg.kr) ──
+P("mmmg","리빙·굿즈","1616 / arita japan TY 팰리스 플레이트 160",32000,null,0,"https://store.mmmg.kr/product/detail.html?product_no=478","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240919/45221cd2930448afbd76e250b1b7912d.jpg"),
+P("mmmg","리빙·굿즈","1616 / arita japan CMA 소프트 딥 170 어스그레이",34500,null,0,"https://store.mmmg.kr/product/detail.html?product_no=377","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240920/0c4e33eafd84513f65cab65c675b2900.jpg"),
+P("mmmg","리빙·굿즈","1616 / arita japan CMA 스택 딥 180 어스그레이",77300,null,0,"https://store.mmmg.kr/product/detail.html?product_no=385","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240919/d6c37daf2f040399d06a7034bbf043d4.jpg"),
+P("mmmg","리빙·굿즈","MANZ 티 컵 블루",52000,null,0,"https://store.mmmg.kr/product/detail.html?product_no=1295","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20250902/9cc5d65a0e504df2ee05bdc42345e0b2.jpg"),
+P("mmmg","리빙·굿즈","1616 / arita japan S&B 머그 컵 핑크",45000,null,0,"https://store.mmmg.kr/product/detail.html?product_no=506","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20241025/7aa4f768576f65ae734b4f9b0348348e.jpg"),
+P("mmmg","리빙·굿즈","1616 / arita japan S&B 보울 120 라이트 브라운 / 플레인 화이트",46800,null,0,"https://store.mmmg.kr/product/detail.html?product_no=602","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240920/2bc9c75fb2ffb3a07772352350ddc8f1.jpg"),
+P("mmmg","리빙·굿즈","1616 / arita japan S&B 베이스 로우 핑크",243100,null,0,"https://store.mmmg.kr/product/detail.html?product_no=488","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240728/5bc629ffc3fe7a5b902915ba4d0e1afa.jpg"),
+P("mmmg","리빙·굿즈","MILLIMETER MILLIGRAM 글라스팟 레드 6 B",84000,null,0,"https://store.mmmg.kr/product/detail.html?product_no=1300","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20241010/56dbf8d22fa7eddcb76649191c68add7.jpg"),
+P("mmmg","리빙·굿즈","MILLIMETER MILLIGRAM 글라스팟 밀크 6 B",80000,null,0,"https://store.mmmg.kr/product/detail.html?product_no=1349","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240820/bb15633a4556168dfff4b3753f8d56fa.jpg"),
+P("mmmg","리빙·굿즈","MILLIMETER MILLIGRAM 글라스팟 밀크 3 B",54600,null,0,"https://store.mmmg.kr/product/detail.html?product_no=1347","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240820/775fb4f17a624c1614af924030f05412.jpg",1),
+P("mmmg","파우치·가방","MILLIMETER MILLIGRAM 카드 월렛 하이 07 그린 팝",49000,null,0,"https://store.mmmg.kr/product/detail.html?product_no=566","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20250619/49c689377636e9afb9694c15a54de4fd.jpg"),
+P("mmmg","리빙·굿즈","MILLIMETER MILLIGRAM 글라스팟 밀크 5",78000,null,0,"https://store.mmmg.kr/product/detail.html?product_no=337","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20241010/14ca77bf0866d8d2b3392c85895bfcaf.jpg"),
+P("mmmg","리빙·굿즈","MILLIMETER MILLIGRAM PT 컨테이너 핑크",55000,null,0,"https://store.mmmg.kr/product/detail.html?product_no=155","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240710/4c610646500c565bc4676725a69bef9c.jpg"),
+P("mmmg","파우치·가방","MILLIMETER MILLIGRAM 코튼 백 10월",23500,null,0,"https://store.mmmg.kr/product/detail.html?product_no=219","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240712/a02a1ea2dc8069a62420aa59b79575e7.jpg"),
+P("mmmg","파우치·가방","MILLIMETER MILLIGRAM 코튼 백 2월",23500,null,0,"https://store.mmmg.kr/product/detail.html?product_no=211","https://ecimg.cafe24img.com/pg970b05192270049/mmmgshop/web/product/medium/20240711/fc3f1184b168c1bb825e3227bdd1e572.jpg"),
+// ── 후긴앤무닌 (공식 취급점 오프타임에서 수집) ──
+P("후긴앤무닌","리빙·굿즈","맥세이프 호환 마그네틱 스마트톡 (Cherry)",18000,null,0,"https://offtime.co.kr/product/후긴앤무닌-맥세이프-호환-마그네틱-스마트톡-cherry/4565/","https://offtime.co.kr/web/product/medium/202607/5c14c25e3408f427b5dcab9607eb18e4.jpg"),
+P("후긴앤무닌","리빙·굿즈","맥세이프 호환 마그네틱 스마트톡 (Strawberry)",18000,null,0,"https://offtime.co.kr/product/후긴앤무닌-맥세이프-호환-마그네틱-스마트톡-strawberry/4564/","https://offtime.co.kr/web/product/medium/202607/c439c9dc497bda0e92788ebe36e47f46.jpg"),
+P("후긴앤무닌","리빙·굿즈","맥세이프 호환 마그네틱 스마트톡 (Sitting Mo)",18000,null,0,"https://offtime.co.kr/product/후긴앤무닌-맥세이프-호환-마그네틱-스마트톡-sitting-mo/4563/","https://offtime.co.kr/web/product/medium/202607/5857cb7fc9c122342654ac8ab4ab725b.jpg"),
+P("후긴앤무닌","리빙·굿즈","맥세이프 호환 마그네틱 스마트톡 (Book & Mo)",18000,null,0,"https://offtime.co.kr/product/후긴앤무닌-맥세이프-호환-마그네틱-스마트톡-book-mo/4562/","https://offtime.co.kr/web/product/medium/202607/239f21bbd02a32525e72a11da542c75f.jpg"),
+P("후긴앤무닌","리빙·굿즈","맥세이프 호환 마그네틱 스마트톡 (마이 모톡)",18000,null,0,"https://offtime.co.kr/product/후긴앤무닌-맥세이프-호환-마그네틱-스마트톡-마이-모톡/4561/","https://offtime.co.kr/web/product/medium/202607/280d44cde66ecde947dc31ff9b99b810.jpg"),
+P("후긴앤무닌","카드·편지","드로잉 카드 (Planning)",2500,null,0,"https://offtime.co.kr/product/후긴앤무닌-드로잉-카드-planning/4553/","https://offtime.co.kr/web/product/medium/202607/357b0becd2c4e366a2e7b8bf6ea9016b.jpg"),
+P("후긴앤무닌","카드·편지","드로잉 카드 (OOTD)",2500,null,0,"https://offtime.co.kr/product/후긴앤무닌-드로잉-카드-ootd/4552/","https://offtime.co.kr/web/product/medium/202607/5fcd79219afdb6dc1cce1fa2d8fb2e44.jpg"),
+P("후긴앤무닌","카드·편지","드로잉 카드 (Fried Egg)",2500,null,0,"https://offtime.co.kr/product/후긴앤무닌-드로잉-카드-fried-egg/4551/","https://offtime.co.kr/web/product/medium/202607/6bba12676ff9cec065ec4a9310dcf10c.jpg"),
+P("후긴앤무닌","카드·편지","드로잉 카드 (Clean Up)",2500,null,0,"https://offtime.co.kr/product/후긴앤무닌-드로잉-카드-clean-up/4550/","https://offtime.co.kr/web/product/medium/202607/eb393b1d90a7c8ff6cc0d0d85361dfc3.jpg"),
+P("후긴앤무닌","카드·편지","드로잉 카드 (Bye Bye)",2500,null,0,"https://offtime.co.kr/product/후긴앤무닌-드로잉-카드-bye-bye/4549/","https://offtime.co.kr/web/product/medium/202607/3f16be1f01f4df1e114f726e32b92d1b.jpg"),
+P("후긴앤무닌","데스크·소품","틴케이스 (Sailing)",11000,null,0,"https://offtime.co.kr/product/후긴앤무닌-틴케이스-sailing/4548/","https://offtime.co.kr/web/product/medium/202607/cc2cf08533ee1a12e76b40831edee120.jpg"),
+P("후긴앤무닌","데스크·소품","틴케이스 (Mo Family)",11000,null,0,"https://offtime.co.kr/product/후긴앤무닌-틴케이스-mo-family/4547/","https://offtime.co.kr/web/product/medium/202607/009a1024426af4fb122fa1c3dbae4e4a.jpg"),
+P("후긴앤무닌","데스크·소품","틴케이스 (Sweet Moment)",11000,null,0,"https://offtime.co.kr/product/후긴앤무닌-틴케이스-sweet-moment/4546/","https://offtime.co.kr/web/product/medium/202607/0fa7c4a9ba14a2b6699cb0a6b6e669f6.jpg"),
+P("후긴앤무닌","리빙·굿즈","미니 아트 포스터 (어느 여름날)",8000,null,0,"https://offtime.co.kr/product/후긴앤무닌-미니-아트-포스터-어느-여름날/4532/","https://offtime.co.kr/web/product/medium/202606/3ad9c585099a6002245c516d8b9cfe4a.jpg"),
+P("후긴앤무닌","리빙·굿즈","미니 아트 포스터 (Sailing)",8000,null,0,"https://offtime.co.kr/product/후긴앤무닌-미니-아트-포스터-sailing/4531/","https://offtime.co.kr/web/product/medium/202606/95c446f3a2a9f14aec89af3bcb3b4a2b.jpg"),
 ];
 
 let products = [];
@@ -844,8 +890,16 @@ function render() {
   const tableWrap = document.getElementById("tableWrap");
   const cmpWrap = document.getElementById("compareWrap");
   grid.style.display = "none"; tableWrap.style.display = "none"; cmpWrap.style.display = "none";
-  document.getElementById("emptyMsg").style.display = list.length ? "none" : "block";
-  if (!list.length) return;
+  const em = document.getElementById("emptyMsg");
+  em.style.display = list.length ? "none" : "block";
+  if (!list.length) {
+    // 수집불가 쇼핑몰 칩을 눌렀다면 사이트 바로가기 안내
+    const lk = filter.mall !== "전체" ? findMallLink(filter.mall) : null;
+    em.innerHTML = lk
+      ? `<div class="big">🚫</div>'${escHtml(filter.mall)}'은 제품 자동 수집이 막혀 있는 쇼핑몰이에요.<br>아래 버튼으로 사이트에서 직접 둘러보세요.<br><br><a class="btn" href="${escHtml(lk.url)}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;">↗ ${escHtml(filter.mall)} 사이트 열기</a>`
+      : `<div class="big">📦</div>표시할 제품이 없어요.<br>검색어나 필터를 바꿔보세요.`;
+    return;
+  }
 
   if (compareMode) { renderCompare(list); cmpWrap.style.display = "block"; }
   else if (view === "table") { renderTable(list); tableWrap.style.display = "block"; }
@@ -1161,6 +1215,11 @@ const LINK_SEED = [
   ["워너디스", "https://wannathis.cafe24.com/"],
   ["오롤리데이", "https://oh-lolly-day.com/"],
   ["휘뚜", "https://www.hwittu.com/"],
+  ["롤드페인트", "https://rolledpaint.com/"],
+  ["mmmg", "https://store.mmmg.kr/"],
+  ["후긴앤무닌", "https://offtime.co.kr/category/huginn-and-muninn/247/"],
+  ["후긴앤무닌 스마트스토어", "https://smartstore.naver.com/huginnandmuninn"],
+  ["라잇요라이프 스마트스토어", "https://smartstore.naver.com/writeyolife"],
 ];
 function loadLinks() {
   try { links = JSON.parse(localStorage.getItem(LINK_KEY)) || []; } catch (e) { links = []; }
@@ -1187,24 +1246,36 @@ function timeAgo(t) {
   return new Date(t).toLocaleDateString("ko-KR");
 }
 
+// 제품이 하나도 수집되지 않은 링크 (스마트스토어 등 차단 사이트)
+function isNoCollect(l) {
+  const b = brandOf(l.name);
+  return !products.some(p => p.mall === b || p.mall === l.name);
+}
+
 function renderLinks() {
   const favs = links.filter(l => l.fav);
+  const noCol = links.filter(isNoCollect);
   $("favCnt").textContent = favs.length ? favs.length : "";
   $("recentCnt").textContent = links.length ? links.length : "";
+  $("noColCnt").textContent = noCol.length ? noCol.length : "";
   updateHint();
   document.querySelectorAll(".linkTab[data-tab]").forEach(t =>
     t.classList.toggle("on", t.dataset.tab === linkTab));
   applyFold();
 
-  // 💛 찜: 찜한 순서대로 / 📋 링크 모음: 전체를 최근 추가한 순서로
+  // 💛 찜: 찜한 순서 / 📋 링크 모음: 최근 추가 순 / 🚫 수집불가: 제품이 안 모인 링크
   const list = linkTab === "fav"
     ? favs.sort((a, b) => (b.favAt || 0) - (a.favAt || 0))
+    : linkTab === "nocollect"
+    ? noCol.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0))
     : links.slice().sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
 
   const wrap = $("linkList");
   if (!list.length) {
     wrap.innerHTML = `<div class="linkEmpty">${linkTab === "fav"
       ? "아직 찜한 쇼핑몰이 없어요. 주소 옆의 하트(♡)를 누르면 여기에 모여요."
+      : linkTab === "nocollect"
+      ? "모든 링크의 제품이 수집되어 있어요! 🎉 (자동 수집이 막힌 사이트가 여기에 모입니다)"
       : "아직 추가한 주소가 없어요. 위 칸에 자주 보는 쇼핑몰 주소를 붙여넣고 <b>+ 주소 추가</b>를 눌러보세요."}</div>`;
     return;
   }
